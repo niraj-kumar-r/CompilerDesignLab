@@ -11,7 +11,7 @@ OCT_DIGIT [0-7]
 {OCT_DIGIT}+    { printf("%s is an octal number.\n", yytext); }
 {DIGIT}+        { printf("%s is a decimal number.\n", yytext); }
 {HEX_DIGIT}+    { printf("%s is a hexadecimal number.\n", yytext); }
-.+               { printf("%s is not a valid number.\n", yytext); }
+.+              { printf("%s is not a valid number.\n", yytext); }
 %%
 
 int yywrap() {}
