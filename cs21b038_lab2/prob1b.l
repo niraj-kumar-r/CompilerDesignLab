@@ -1,11 +1,22 @@
 %{
 #include <stdio.h>
+#include <stdbool.h>
+
+bool accepted = false;
+
+void check() {
+    if (accepted) {
+        printf("Accepted\n");
+    } else {
+        printf("Rejected\n");
+    }
+    accepted = false;
+}
 %}
 
 %%
-.*00.*  { printf("Rejected %s", yytext); }
-.*111.* { printf("Accepted %s", yytext); }
-(1|0)*  { printf("Rejected %s", yytext); }
+.*111.* { accepted = true; }
+.*00.*  { accepted = false; }
 .       { }
 %%
 

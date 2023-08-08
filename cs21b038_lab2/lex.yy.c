@@ -360,11 +360,13 @@ struct yy_trans_info
 	flex_int32_t yy_verify;
 	flex_int32_t yy_nxt;
 	};
-static const flex_int16_t yy_accept[33] =
+static const flex_int16_t yy_accept[53] =
     {   0,
-        0,    0,    6,    4,    3,    4,    4,    0,    0,    0,
-        2,    0,    2,    2,    2,    1,    2,    2,    1,    1,
-        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        3,    3,    6,    4,    5,    3,    3,    0,    0,    0,
+        1,    3,    3,    3,    1,    0,    1,    1,    1,    2,
+        1,    1,    2,    1,    1,    1,    2,    2,    2,    1,
+        2,    2,    1,    2,    1,    2,    1,    1,    1,    1,
+        1,    2,    1,    1,    2,    1,    1,    1,    1,    1,
         1,    0
     } ;
 
@@ -405,36 +407,46 @@ static const YY_CHAR yy_meta[5] =
         1,    1,    1,    1
     } ;
 
-static const flex_int16_t yy_base[33] =
+static const flex_int16_t yy_base[53] =
     {   0,
-        0,    0,   31,    4,   32,   27,   25,    0,    0,    0,
-        8,   24,   24,    0,   22,   12,    0,   21,   18,   15,
-        0,   16,   10,   20,    7,    0,    0,    0,    0,    2,
-        0,   32
+        0,    0,   59,    4,   60,    8,   12,    0,   55,   53,
+       16,    0,    0,   50,   20,   46,   43,    0,   24,   28,
+        0,   38,   32,    0,    0,   34,   30,   36,    0,   26,
+       23,    0,   40,   18,   44,   14,   48,   52,   11,    0,
+        0,    0,    0,    6,    0,    0,    0,    0,    2,    0,
+        0,   60
     } ;
 
-static const flex_int16_t yy_def[33] =
+static const flex_int16_t yy_def[53] =
     {   0,
-       32,    1,   32,   32,   32,    4,    4,    4,    6,    7,
-       32,    7,   11,   11,   13,   32,   11,   13,   16,   19,
-       16,   32,   16,   32,   24,   24,   22,   16,   24,   22,
-       22,    0
+       52,    1,   52,   52,   52,   52,   52,    4,    4,    4,
+       52,    7,    6,    7,   52,    4,   15,   11,   52,   52,
+       15,   17,   52,   15,   11,   19,   23,   52,   20,   17,
+       27,   23,   52,   23,   52,   20,   52,   52,   38,   35,
+       33,   23,   35,   33,   20,   38,   37,   38,   37,   33,
+       37,    0
     } ;
 
-static const flex_int16_t yy_nxt[37] =
+static const flex_int16_t yy_nxt[65] =
     {   0,
-        4,    5,    6,    7,    8,   31,    9,   10,   13,   26,
-       14,   15,   19,   28,   20,   21,   25,   24,   26,   27,
-       25,   23,   29,   30,   22,   18,   17,   16,   12,   11,
-       32,    3,   32,   32,   32,   32
+        4,    5,    6,    7,    8,   51,    9,   10,    8,   50,
+       11,   12,    8,   46,   13,   14,   17,   45,   18,   19,
+       17,   42,   21,   22,   17,   38,   25,   26,   27,   37,
+       28,   29,   27,   34,   31,   32,   27,   33,   35,   36,
+       39,   30,   40,   41,   39,   24,   43,   44,   39,   23,
+       46,   47,   39,   20,   48,   49,   16,   15,   52,    3,
+       52,   52,   52,   52
     } ;
 
-static const flex_int16_t yy_chk[37] =
+static const flex_int16_t yy_chk[65] =
     {   0,
-        1,    1,    1,    1,    4,   30,    4,    4,   11,   25,
-       11,   11,   16,   23,   16,   16,   22,   20,   22,   22,
-       24,   19,   24,   24,   18,   15,   13,   12,    7,    6,
-        3,   32,   32,   32,   32,   32
+        1,    1,    1,    1,    4,   49,    4,    4,    6,   44,
+        6,    6,    7,   39,    7,    7,   11,   36,   11,   11,
+       15,   34,   15,   15,   19,   31,   19,   19,   20,   30,
+       20,   20,   23,   27,   23,   23,   28,   26,   28,   28,
+       33,   22,   33,   33,   35,   17,   35,   35,   37,   16,
+       37,   37,   38,   14,   38,   38,   10,    9,    3,   52,
+       52,   52,   52,   52
     } ;
 
 static yy_state_type yy_last_accepting_state;
@@ -454,18 +466,6 @@ char *yytext;
 #line 1 "prob1a.l"
 #line 2 "prob1a.l"
 #include <stdio.h>
-#include <stdbool.h>
-
-bool accepted = false;
-
-void check() {
-    if (accepted) {
-        printf("Accepted\n");
-    } else {
-        printf("Rejected\n");
-    }
-    accepted = false;
-}
 #line 469 "lex.yy.c"
 #line 470 "lex.yy.c"
 
@@ -684,7 +684,7 @@ YY_DECL
 		}
 
 	{
-#line 17 "prob1a.l"
+#line 5 "prob1a.l"
 
 #line 689 "lex.yy.c"
 
@@ -713,13 +713,13 @@ yy_match:
 			while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 				{
 				yy_current_state = (int) yy_def[yy_current_state];
-				if ( yy_current_state >= 33 )
+				if ( yy_current_state >= 53 )
 					yy_c = yy_meta[yy_c];
 				}
 			yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
 			++yy_cp;
 			}
-		while ( yy_base[yy_current_state] != 32 );
+		while ( yy_base[yy_current_state] != 60 );
 
 yy_find_action:
 		yy_act = yy_accept[yy_current_state];
@@ -745,31 +745,30 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 18 "prob1a.l"
-{ accepted = true; }
+#line 6 "prob1a.l"
+{ printf("Rejected %s", yytext); }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 19 "prob1a.l"
-{ accepted = false; }
+#line 7 "prob1a.l"
+{ printf("Accepted %s", yytext); }
 	YY_BREAK
 case 3:
-/* rule 3 can match eol */
 YY_RULE_SETUP
-#line 20 "prob1a.l"
-{ check(); }
+#line 8 "prob1a.l"
+{ printf("Rejected %s", yytext); }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 21 "prob1a.l"
+#line 9 "prob1a.l"
 { }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 22 "prob1a.l"
+#line 10 "prob1a.l"
 ECHO;
 	YY_BREAK
-#line 772 "lex.yy.c"
+#line 771 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1066,7 +1065,7 @@ static int yy_get_next_buffer (void)
 		while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 			{
 			yy_current_state = (int) yy_def[yy_current_state];
-			if ( yy_current_state >= 33 )
+			if ( yy_current_state >= 53 )
 				yy_c = yy_meta[yy_c];
 			}
 		yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
@@ -1094,11 +1093,11 @@ static int yy_get_next_buffer (void)
 	while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 		{
 		yy_current_state = (int) yy_def[yy_current_state];
-		if ( yy_current_state >= 33 )
+		if ( yy_current_state >= 53 )
 			yy_c = yy_meta[yy_c];
 		}
 	yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
-	yy_is_jam = (yy_current_state == 32);
+	yy_is_jam = (yy_current_state == 52);
 
 		return yy_is_jam ? 0 : yy_current_state;
 }
@@ -1774,11 +1773,11 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 22 "prob1a.l"
+#line 10 "prob1a.l"
 
 
 int main(int argc, char **argv) {
-        if (argc != 2) {
+    if (argc != 2) {
         fprintf(stderr, "Usage: %s input_file\n", argv[0]);
         return 1;
     }
@@ -1789,9 +1788,9 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    yyin = input_file;  // Set the input stream for Flex
+    yyin = input_file;
 
-    yylex();  // Start the lexical analysis
+    yylex();
 
     fclose(input_file);
 
