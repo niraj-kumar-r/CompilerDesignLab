@@ -3,10 +3,9 @@
 %}
 
 %%
-.*00.*  { printf("Rejected %s", yytext); }
-.*111.* { printf("Accepted %s", yytext); }
-(1|0)*  { printf("Rejected %s", yytext); }
-.       { }
+(1|0)*00(1|0)*  { printf("Rejected %s", yytext); }
+(1|0)*111(1|0)* { printf("Accepted yess %s", yytext); }
+.+      { printf("Rejected yarr %s", yytext);}
 %%
 
 int main(int argc, char **argv) {
@@ -30,5 +29,3 @@ int main(int argc, char **argv) {
     return 0;
 
 }
-
-
