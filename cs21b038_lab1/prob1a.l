@@ -4,8 +4,8 @@
 
 %%
 (1|0)*00(1|0)*  { printf("Rejected %s", yytext); }
-(1|0)*111(1|0)* { printf("Accepted yess %s", yytext); }
-.+      { printf("Rejected yarr %s", yytext);}
+(1|0)*111(1|0)* { printf("Accepted %s", yytext); }
+.+      { printf("Rejected %s", yytext);}
 %%
 
 int main(int argc, char **argv) {

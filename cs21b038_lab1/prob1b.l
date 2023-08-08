@@ -1,12 +1,34 @@
 %{
 #include <stdio.h>
+void check(char *s) {
+    // in w the number of xs modulo 2 is equal to the number of ys modulo 3
+
+    int x = 0;
+    int y = 0;
+    int z = 0;
+    int i = 0;
+    while (s[i] != '\0') {
+        if (s[i] == 'x') {
+            x++;
+        } else if (s[i] == 'y') {
+            y++;
+        } else if (s[i] == 'z') {
+            z++;
+        }
+        i++;
+    }
+
+    if (x % 2 == y % 3) {
+        printf("Accepted %s", s);
+    } else {
+        printf("Rejected %s", s);
+    }
+}
 %}
 
 %%
-.*00.*  { printf("Rejected %s", yytext); }
-.*111.* { printf("Accepted %s", yytext); }
-(1|0)*  { printf("Rejected %s", yytext); }
-.       { }
+("x"|"y"|"z")* {check(yytext);}
+.+       {printf("Rejected %s", yytext);}
 %%
 
 int main(int argc, char **argv) {
