@@ -1,5 +1,5 @@
 CFLAGS=-g -DDEBUG
-LINKERFLAG=-lfl
+LINKERFLAG=-ll
 CC=gcc
 
 all:lexer	
