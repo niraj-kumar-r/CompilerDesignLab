@@ -1,0 +1,45 @@
+Symbol Table:
+----------------
+Lexeme: int, Token Type: keyword
+Lexeme: main, Token Type: identifier
+Lexeme: (, Token Type: left_parenthesis
+Lexeme: ), Token Type: right_parenthesis
+Lexeme: {, Token Type: left_brace
+Lexeme: int, Token Type: keyword
+Lexeme: a, Token Type: identifier
+Lexeme: =, Token Type: assign
+Lexeme: 10, Token Type: integer
+Lexeme: ;, Token Type: semicolon
+Lexeme: float, Token Type: keyword
+Lexeme: b, Token Type: identifier
+Lexeme: =, Token Type: assign
+Lexeme: 20.0, Token Type: float
+Lexeme: ;, Token Type: semicolon
+Lexeme: int, Token Type: keyword
+Lexeme: c, Token Type: identifier
+Lexeme: =, Token Type: assign
+Lexeme: a, Token Type: identifier
+Lexeme: +, Token Type: arithmetic_operator
+Lexeme: b, Token Type: identifier
+Lexeme: ;, Token Type: semicolon
+Lexeme: int, Token Type: keyword
+Lexeme: d, Token Type: identifier
+Lexeme: =, Token Type: assign
+Lexeme: 30, Token Type: integer
+Lexeme: ;, Token Type: semicolon
+Lexeme: if, Token Type: keyword
+Lexeme: (, Token Type: left_parenthesis
+Lexeme: d, Token Type: identifier
+Lexeme: -, Token Type: arithmetic_operator
+Lexeme: c, Token Type: identifier
+Lexeme: <=, Token Type: relational_operator
+Lexeme: 0, Token Type: integer
+Lexeme: ), Token Type: right_parenthesis
+Lexeme: {, Token Type: left_brace
+Lexeme: printf, Token Type: identifier
+Lexeme: (, Token Type: left_parenthesis
+Lexeme: "hello world", Token Type: string
+Lexeme: ), Token Type: right_parenthesis
+Lexeme: ;, Token Type: semicolon
+Lexeme: }, Token Type: right_brace
+Lexeme: }, Token Type: right_brace
