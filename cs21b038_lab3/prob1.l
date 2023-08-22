@@ -1,7 +1,23 @@
 %{
 #include <stdio.h>
 #include <string.h>
-#include "symbol_table.h"
+#include <stdlib.h>
+
+typedef struct
+{
+    char lexeme[100];
+    char tokenType[20];
+    // int size;
+    // int usage;
+} SymbolEntry;
+
+#define MAX_ENTRIES 5000
+static SymbolEntry symbolTable[MAX_ENTRIES];
+static int numEntries = 0;
+
+void addToSymbolTable(const char *lexeme, const char *tokenType);
+void writeSymbolTableToFile(const char *filename);
+void printSymbolTable();
 %}
 
 KEYWORDS "auto"|"break"|"case"|"char"|"const"|"continue"|"default"|"do"|"double"|"else"|"enum"|"extern"|"float"|"for"|"goto"|"if"|"int"|"long"|"register"|"return"|"short"|"signed"|"sizeof"|"static"|"struct"|"switch"|"typedef"|"union"|"unsigned"|"void"|"volatile"|"while"
@@ -27,6 +43,7 @@ KEYWORDS "auto"|"break"|"case"|"char"|"const"|"continue"|"default"|"do"|"double"
 \}                { addToSymbolTable(yytext, "right_brace"); }
 \(                { addToSymbolTable(yytext, "left_parenthesis"); }
 \)                { addToSymbolTable(yytext, "right_parenthesis"); }
+\n                {}
 
 
 %%
@@ -53,3 +70,47 @@ int main(int argc, char *argv[]) {
     
     return 0;
 }
+
+
+void addToSymbolTable(const char *lexeme, const char *tokenType)
+{
+    if (numEntries < MAX_ENTRIES)
+    {
+        SymbolEntry entry;
+        strncpy(entry.lexeme, lexeme, sizeof(entry.lexeme));
+        strncpy(entry.tokenType, tokenType, sizeof(entry.tokenType));
+        symbolTable[numEntries++] = entry;
+    }
+}
+
+void writeSymbolTableToFile(const char *filename)
+{
+    FILE *file = fopen(filename, "w");
+    if (!file)
+    {
+        printf("Error opening file for writing symbol table\n");
+        return;
+    }
+
+    fprintf(file, "Symbol Table:\n");
+    fprintf(file, "----------------\n");
+
+    for (int i = 0; i < numEntries; i++)
+    {
+        fprintf(file, "Lexeme: %s, Token Type: %s\n", symbolTable[i].lexeme, symbolTable[i].tokenType);
+    }
+
+    fclose(file);
+}
+
+void printSymbolTable()
+{
+    printf("Symbol Table:\n");
+    printf("-------------\n");
+
+    for (int i = 0; i < numEntries; i++)
+    {
+        printf("Lexeme: %s, Token Type: %s\n", symbolTable[i].lexeme, symbolTable[i].tokenType);
+    }
+}
+
