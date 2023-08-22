@@ -26,6 +26,8 @@ KEYWORDS "auto"|"break"|"case"|"char"|"const"|"continue"|"default"|"do"|"double"
 [\t\r ]+          {};
 \/\/[^\n]*        {};
 \/\*([^*]|\*+[^*/])*\*+\/  {};
+\#include[^\n]+   {};
+\#define[^\n]+    {};
 [0-9]+            { addToSymbolTable(yytext, "integer"); }
 [0-9]+"."[0-9]+   { addToSymbolTable(yytext, "float"); }
 \"([^\\\"]|\\.)*\" { addToSymbolTable(yytext, "string"); }

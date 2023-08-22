@@ -11,4 +11,4 @@ lex.yy.c: $(fname)
 	flex $(fname)
 
 clean: 
-	rm -f lexer lex.yy.c
+	rm -f lexer lex.yy.c symbol_table.txt
