@@ -92,12 +92,12 @@ void writeSymbolTableToFile(const char *filename)
         return;
     }
 
-    fprintf(file, "Symbol Table:\n");
+    fprintf(file, "Lexeme\t Token Type\n");
     fprintf(file, "----------------\n");
 
     for (int i = 0; i < numEntries; i++)
     {
-        fprintf(file, "Lexeme: %s, Token Type: %s\n", symbolTable[i].lexeme, symbolTable[i].tokenType);
+        fprintf(file, "%s\t %s\n", symbolTable[i].lexeme, symbolTable[i].tokenType);
     }
 
     fclose(file);
@@ -105,12 +105,11 @@ void writeSymbolTableToFile(const char *filename)
 
 void printSymbolTable()
 {
-    printf("Symbol Table:\n");
+    printf("Lexeme\t Token Type\n");
     printf("-------------\n");
 
     for (int i = 0; i < numEntries; i++)
     {
-        printf("Lexeme: %s, Token Type: %s\n", symbolTable[i].lexeme, symbolTable[i].tokenType);
+        printf("%s\t %s\n", symbolTable[i].lexeme, symbolTable[i].tokenType);
     }
 }
-
