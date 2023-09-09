@@ -1,0 +1,12 @@
+Lexeme	 Token Type
+----------------
+main	 identifier
+a	 identifier
+b	 identifier
+c	 identifier
+a	 identifier
+b	 identifier
+d	 identifier
+d	 identifier
+c	 identifier
+printf	 identifier
