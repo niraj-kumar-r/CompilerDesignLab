@@ -5,4 +5,5 @@ result = a++ * 5.4;
 result = --b;
 result = value - (2 * -3);
 result = -(a + b);
+result = a % b >> 2 - 3 & 4;
 result = a + -b;
