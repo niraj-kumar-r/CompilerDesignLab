@@ -53,7 +53,7 @@ slist : 	assignmentexpression SEMICOLON {
 				}
 				$$ = $1;
 			} slist
-			| IF LPAREN booleanexpression RPAREN LBRACE slist RBRACE ELSE LBRACE slist RBRACE {
+			| IF LPAREN booleanexpression {
 				$$ = malloc(sizeof(struct I_Node));
 				if ($$ == NULL) {
 					yyerror("no mem");
@@ -62,30 +62,29 @@ slist : 	assignmentexpression SEMICOLON {
 				strcpy($$->lexeme, "if else");
 				genLabel();
 				strcpy($$->true_label, label_g);
+				strcpy($3->true_label, label_g);
 				genLabel();
 				strcpy($$->false_label, label_g);
+				strcpy($3->false_label, label_g);
 				genLabel();
 				strcpy($$->next_label, label_g);
+				strcpy($3->next_label, label_g);
 
-				printf("\nif %s goto %s\n", $3->temp_var, $$->true_label);
+				printf("if %s goto %s\n", $3->temp_var, $$->true_label);
 				printf("goto %s\n\n", $$->false_label);
-			} slist
-			| IF LPAREN booleanexpression RPAREN LBRACE slist RBRACE {
-				$$ = malloc(sizeof(struct I_Node));
-				if ($$ == NULL) {
-					yyerror("no mem");
-				}
-				strcpy($$->token, "KEYWORD");
-				strcpy($$->lexeme, "if else");
-				genLabel();
-				strcpy($$->true_label, label_g);
-				genLabel();
-				strcpy($$->next_label, label_g);
 
-				printf("\nif %s goto %s\n\n", $3->temp_var, $$->true_label);
-			}  slist
+			} RPAREN LBRACE {
+				printf("\n\n%s:\n\n", $3->true_label);
+			} slist {
+				printf("goto %s\n\n", $3->next_label);
+			} RBRACE ELSE LBRACE {
+				printf("\n\n%s:\n\n", $3->false_label);
+			} slist RBRACE {
+				printf("\n\n%s:\n\n", $3->next_label);
+			} slist
 			| error{ printf("\nRejected EXPR\n"); } SEMICOLON  slist
 			| {freeTree($$);} ;
+			
 
 assignmentexpression 	:	variable ASSIGN additiveexpression {
 								$$ = malloc(sizeof(struct I_Node));
