@@ -6,6 +6,8 @@ int yyerror(char *);
 int eflag=0;
 int label_count=0;
 int temp_count=0;
+char temp_var_g[20];
+char label_g[20];
 extern FILE * yyin;
 
 struct I_Node{
@@ -15,6 +17,7 @@ struct I_Node{
 	char temp_var[20];
 	char true_label[20];
 	char false_label[20];
+	char next_label[20];
 	int ival;
 };
 
@@ -22,6 +25,7 @@ void postorder(struct I_Node *root);
 void inorder(struct I_Node *root);
 void preorder(struct I_Node *root);
 void printNode(struct I_Node *root);
+void freeTree(struct I_Node *root);
 char *genTemp();
 char *genLabel();
 
@@ -42,19 +46,46 @@ char *genLabel();
 
 %%
 
-prog : slist {
-				printf("\nAccepted slist\n");
-			} prog 
-		| selectionstatement{
-			printf("\nAccepted if else statement\n");
-		} prog 
-		| error{ printf("\nRejected EXPR\n"); } prog 
-		| {};
+slist : 	assignmentexpression SEMICOLON {
+				$$ = malloc(sizeof(struct I_Node));
+				if ($$ == NULL) {
+					yyerror("no mem");
+				}
+				$$ = $1;
+			} slist
+			| IF LPAREN booleanexpression RPAREN LBRACE slist RBRACE ELSE LBRACE slist RBRACE {
+				$$ = malloc(sizeof(struct I_Node));
+				if ($$ == NULL) {
+					yyerror("no mem");
+				}
+				strcpy($$->token, "KEYWORD");
+				strcpy($$->lexeme, "if else");
+				genLabel();
+				strcpy($$->true_label, label_g);
+				genLabel();
+				strcpy($$->false_label, label_g);
+				genLabel();
+				strcpy($$->next_label, label_g);
 
-selectionstatement : IF LPAREN booleanexpression RPAREN LBRACE prog RBRACE ELSE LBRACE prog RBRACE 
-					| IF LPAREN booleanexpression RPAREN LBRACE prog RBRACE;
+				printf("\nif %s goto %s\n", $3->temp_var, $$->true_label);
+				printf("goto %s\n\n", $$->false_label);
+			} slist
+			| IF LPAREN booleanexpression RPAREN LBRACE slist RBRACE {
+				$$ = malloc(sizeof(struct I_Node));
+				if ($$ == NULL) {
+					yyerror("no mem");
+				}
+				strcpy($$->token, "KEYWORD");
+				strcpy($$->lexeme, "if else");
+				genLabel();
+				strcpy($$->true_label, label_g);
+				genLabel();
+				strcpy($$->next_label, label_g);
 
-slist : 	assignmentexpression SEMICOLON ;
+				printf("\nif %s goto %s\n\n", $3->temp_var, $$->true_label);
+			}  slist
+			| error{ printf("\nRejected EXPR\n"); } SEMICOLON  slist
+			| {freeTree($$);} ;
 
 assignmentexpression 	:	variable ASSIGN additiveexpression {
 								$$ = malloc(sizeof(struct I_Node));
@@ -67,8 +98,9 @@ assignmentexpression 	:	variable ASSIGN additiveexpression {
 								$$->ival = $3->ival;
 								strcpy($$->token,"ASSIGN");
 								strcpy($$->lexeme, "=");
-								strcpy($$->temp_var, genTemp());
-								printf("%s = %s + %s\n", $$->temp_var, $1->temp_var, $3->temp_var);
+								genTemp();
+								strcpy($$->temp_var, temp_var_g);
+								printf("%s = %s\n", $1->temp_var, $3->temp_var);
 							}
 							| variable INC{
 								$$ = malloc(sizeof(struct I_Node));
@@ -80,7 +112,7 @@ assignmentexpression 	:	variable ASSIGN additiveexpression {
 								$$->ival = $1->ival + 1;
 								strcpy($$->token, "OP");
 								strcpy($$->lexeme, "++");
-								strcpy($$->temp_var, genTemp());
+								strcpy($$->temp_var, $1->temp_var);
 								printf("%s = %s + 1\n", $$->temp_var, $1->temp_var);
 							}
 							| variable DEC {
@@ -93,7 +125,7 @@ assignmentexpression 	:	variable ASSIGN additiveexpression {
 								$$->ival = $1->ival - 1;
 								strcpy($$->token, "OP");
 								strcpy($$->lexeme, "--");
-								strcpy($$->temp_var, genTemp());
+								strcpy($$->temp_var, $1->temp_var);
 								printf("%s = %s - 1\n", $$->temp_var, $1->temp_var);
 							}
 							| INC variable {
@@ -106,7 +138,7 @@ assignmentexpression 	:	variable ASSIGN additiveexpression {
 								$$->ival = $2->ival + 1;
 								strcpy($$->token, "OP");
 								strcpy($$->lexeme, "++");
-								strcpy($$->temp_var, genTemp());
+								strcpy($$->temp_var, $2->temp_var);
 								printf("%s = %s + 1\n", $$->temp_var, $2->temp_var);
 							}
 							| DEC variable {
@@ -119,7 +151,7 @@ assignmentexpression 	:	variable ASSIGN additiveexpression {
 								$$->ival = $2->ival - 1;
 								strcpy($$->token, "OP");
 								strcpy($$->lexeme, "--");
-								strcpy($$->temp_var, genTemp());
+								strcpy($$->temp_var, $2->temp_var);
 								printf("%s = %s - 1\n", $$->temp_var, $2->temp_var);
 							};
 
@@ -132,14 +164,23 @@ variable : 	IDENTIFIER {
 				strcpy($$->token,"ID");
 				$$->left = NULL;
 				$$->right = NULL;
-				strcpy($$->temp_var, genTemp());
+				genTemp();
+				strcpy($$->temp_var, temp_var_g);
 				printf("%s = %s\n", $$->temp_var, $$->lexeme);
 			};
 			| LPAREN variable RPAREN {
+				$$ = malloc(sizeof(struct I_Node));
+				if ($$ == NULL) {
+					yyerror("no mem");
+				}
 				$$ = $2;
 			};
 
 booleanexpression	:	primaryexpression {
+							$$ = malloc(sizeof(struct I_Node));
+							if ($$ == NULL) {
+								yyerror("no mem");
+							}
 							$$ = $1;
 						}
 						| primaryexpression LT primaryexpression{
@@ -152,7 +193,8 @@ booleanexpression	:	primaryexpression {
 							$$->ival = $1->ival < $3->ival;
 							strcpy($$->token, "OP");
 							strcpy($$->lexeme, "<");
-							strcpy($$->temp_var, genTemp());
+							genTemp();
+							strcpy($$->temp_var, temp_var_g);
 							printf("%s = %s < %s\n", $$->temp_var, $1->temp_var, $3->temp_var);
 						}
 						| primaryexpression GT primaryexpression{
@@ -165,7 +207,8 @@ booleanexpression	:	primaryexpression {
 							$$->ival = $1->ival > $3->ival;
 							strcpy($$->token, "OP");
 							strcpy($$->lexeme, ">");
-							strcpy($$->temp_var, genTemp());
+							genTemp();
+							strcpy($$->temp_var, temp_var_g);
 							printf("%s = %s > %s\n", $$->temp_var, $1->temp_var, $3->temp_var);
 						}
 						| primaryexpression LEQ primaryexpression{
@@ -178,7 +221,8 @@ booleanexpression	:	primaryexpression {
 							$$->ival = $1->ival <= $3->ival;
 							strcpy($$->token, "OP");
 							strcpy($$->lexeme, "<=");
-							strcpy($$->temp_var, genTemp());
+							genTemp();
+							strcpy($$->temp_var, temp_var_g);
 							printf("%s = %s <= %s\n", $$->temp_var, $1->temp_var, $3->temp_var);
 						}
 						| primaryexpression GEQ primaryexpression{
@@ -191,7 +235,8 @@ booleanexpression	:	primaryexpression {
 							$$->ival = $1->ival >= $3->ival;
 							strcpy($$->token, "OP");
 							strcpy($$->lexeme, ">=");
-							strcpy($$->temp_var, genTemp());
+							genTemp();
+							strcpy($$->temp_var, temp_var_g);
 							printf("%s = %s >= %s\n", $$->temp_var, $1->temp_var, $3->temp_var);
 						}
 						| primaryexpression EQ primaryexpression{
@@ -204,7 +249,8 @@ booleanexpression	:	primaryexpression {
 							$$->ival = $1->ival == $3->ival;
 							strcpy($$->token, "OP");
 							strcpy($$->lexeme, "==");
-							strcpy($$->temp_var, genTemp());
+							genTemp();
+							strcpy($$->temp_var, temp_var_g);
 							printf("%s = %s == %s\n", $$->temp_var, $1->temp_var, $3->temp_var);
 						}
 						| primaryexpression NEQ primaryexpression{
@@ -217,7 +263,8 @@ booleanexpression	:	primaryexpression {
 							$$->ival = $1->ival != $3->ival;
 							strcpy($$->token, "OP");
 							strcpy($$->lexeme, "!=");
-							strcpy($$->temp_var, genTemp());
+							genTemp();
+							strcpy($$->temp_var, temp_var_g);
 							printf("%s = %s != %s\n", $$->temp_var, $1->temp_var, $3->temp_var);
 						}
 						| primaryexpression AND primaryexpression{
@@ -230,7 +277,8 @@ booleanexpression	:	primaryexpression {
 							$$->right = $3;
 							strcpy($$->token, "OP");
 							strcpy($$->lexeme, "&&");
-							strcpy($$->temp_var, genTemp());
+							genTemp();
+							strcpy($$->temp_var, temp_var_g);
 							printf("%s = %s && %s\n", $$->temp_var, $1->temp_var, $3->temp_var);
 						}
 						| primaryexpression OR primaryexpression{
@@ -243,7 +291,8 @@ booleanexpression	:	primaryexpression {
 							$$->right = $3;
 							strcpy($$->token, "OP");
 							strcpy($$->lexeme, "||");
-							strcpy($$->temp_var, genTemp());
+							genTemp();
+							strcpy($$->temp_var, temp_var_g);
 							printf("%s = %s || %s\n", $$->temp_var, $1->temp_var, $3->temp_var);
 
 						}
@@ -257,11 +306,16 @@ booleanexpression	:	primaryexpression {
 							$$->right = $2;
 							strcpy($$->token, "OP");
 							strcpy($$->lexeme, "!");
-							strcpy($$->temp_var, genTemp());
+							genTemp();
+							strcpy($$->temp_var, temp_var_g);
 							printf("%s = !%s\n", $$->temp_var, $2->temp_var);
 						};
 
 additiveexpression : 	multiplicativeexpression {
+							$$ = malloc(sizeof(struct I_Node));
+							if ($$ == NULL) {
+								yyerror("no mem");
+							}
 							$$ = $1;
 						}
 						| additiveexpression ADD multiplicativeexpression {
@@ -274,7 +328,8 @@ additiveexpression : 	multiplicativeexpression {
 							$$->ival = $1->ival + $3->ival;
 							strcpy($$->token, "OP");
 							strcpy($$->lexeme, "+");
-							strcpy($$->temp_var, genTemp());
+							genTemp();
+							strcpy($$->temp_var, temp_var_g);
 							printf("%s = %s + %s\n", $$->temp_var, $1->temp_var, $3->temp_var);
 						}
 						| additiveexpression SUB multiplicativeexpression {
@@ -287,11 +342,16 @@ additiveexpression : 	multiplicativeexpression {
 							$$->ival = $1->ival - $3->ival;
 							strcpy($$->token, "OP");
 							strcpy($$->lexeme, "-");
-							strcpy($$->temp_var, genTemp());
+							genTemp();
+							strcpy($$->temp_var, temp_var_g);
 							printf("%s = %s - %s\n", $$->temp_var, $1->temp_var, $3->temp_var);
 						};
 
 multiplicativeexpression : 	unaryexpression {
+								$$ = malloc(sizeof(struct I_Node));
+								if ($$ == NULL) {
+									yyerror("no mem");
+								}
 								$$ = $1;
 							}
 							| multiplicativeexpression MUL unaryexpression {
@@ -304,7 +364,8 @@ multiplicativeexpression : 	unaryexpression {
 								$$->ival = $1->ival * $3->ival;
 								strcpy($$->token, "OP");
 								strcpy($$->lexeme, "*");
-								strcpy($$->temp_var, genTemp());
+								genTemp();
+								strcpy($$->temp_var, temp_var_g);
 								printf("%s = %s * %s\n", $$->temp_var, $1->temp_var, $3->temp_var);
 							}
 							| multiplicativeexpression DIV unaryexpression {
@@ -317,11 +378,16 @@ multiplicativeexpression : 	unaryexpression {
 								$$->ival = $1->ival / $3->ival;
 								strcpy($$->token, "OP");
 								strcpy($$->lexeme, "/");
-								strcpy($$->temp_var, genTemp());
+								genTemp();
+								strcpy($$->temp_var, temp_var_g);
 								printf("%s = %s / %s\n", $$->temp_var, $1->temp_var, $3->temp_var);
 							};
 
 unaryexpression : 	postfixexpression {
+						$$ = malloc(sizeof(struct I_Node));
+						if ($$ == NULL) {
+							yyerror("no mem");
+						}
 						$$ = $1;
 					}
 					| INC unaryexpression {
@@ -334,7 +400,7 @@ unaryexpression : 	postfixexpression {
 						$$->ival = $2->ival + 1;
 						strcpy($$->token, "OP");
 						strcpy($$->lexeme, "++");
-						strcpy($$->temp_var, genTemp());
+						strcpy($$->temp_var, $2->temp_var);
 						printf("%s = %s + 1\n", $$->temp_var, $2->temp_var);
 					}
 					| DEC unaryexpression {
@@ -347,10 +413,14 @@ unaryexpression : 	postfixexpression {
 						$$->ival = $2->ival - 1;
 						strcpy($$->token, "OP");
 						strcpy($$->lexeme, "--");
-						strcpy($$->temp_var, genTemp());
+						strcpy($$->temp_var, $2->temp_var);
 						printf("%s = %s - 1\n", $$->temp_var, $2->temp_var);
 					}
 					| ADD unaryexpression {
+						$$ = malloc(sizeof(struct I_Node));
+						if ($$ == NULL) {
+							yyerror("no mem");
+						}
 						$$ = $2;
 					}
 					| SUB unaryexpression {
@@ -363,11 +433,16 @@ unaryexpression : 	postfixexpression {
 						$$->ival = -1 * $2->ival;
 						strcpy($$->token, "OP");
 						strcpy($$->lexeme, "negative");
-						strcpy($$->temp_var, genTemp());
+						genTemp();
+						strcpy($$->temp_var, temp_var_g);
 						printf("%s = -1 * %s\n", $$->temp_var, $2->temp_var);
 					};
 
 postfixexpression : 	primaryexpression {
+							$$ = malloc(sizeof(struct I_Node));
+							if ($$ == NULL) {
+								yyerror("no mem");
+							}
 							$$ = $1;
 						}
 						| postfixexpression INC {
@@ -380,7 +455,7 @@ postfixexpression : 	primaryexpression {
 							$$->ival = $1->ival + 1;
 							strcpy($$->token, "OP");
 							strcpy($$->lexeme, "++");
-							strcpy($$->temp_var, genTemp());
+							strcpy($$->temp_var, $1->temp_var);
 							printf("%s = %s + 1\n", $$->temp_var, $1->temp_var);
 						};
 						| postfixexpression DEC {
@@ -393,11 +468,15 @@ postfixexpression : 	primaryexpression {
 							$$->ival = $1->ival - 1;
 							strcpy($$->token, "OP");
 							strcpy($$->lexeme, "--");
-							strcpy($$->temp_var, genTemp());
+							strcpy($$->temp_var, $1->temp_var);
 							printf("%s = %s - 1\n", $$->temp_var, $1->temp_var);
 						};
 
 primaryexpression : 	constant {
+							$$ = malloc(sizeof(struct I_Node));
+							if ($$ == NULL) {
+								yyerror("no mem");
+							}
 							$$ = $1;
 						}
 					| 	IDENTIFIER {
@@ -409,10 +488,15 @@ primaryexpression : 	constant {
 							$$->left = NULL;
 							$$->right = NULL;
 							strcpy($$->token, "ID");
-							strcpy($$->temp_var, genTemp());
+							genTemp();
+							strcpy($$->temp_var, temp_var_g);
 							printf("%s = %s\n", $$->temp_var, $$->lexeme);
 					}
 					| 	LPAREN additiveexpression RPAREN {
+							$$ = malloc(sizeof(struct I_Node));
+							if ($$ == NULL) {
+								yyerror("no mem");
+							}
 							$$ = $2;
 					};
 
@@ -426,7 +510,8 @@ constant : 	INTEGER {
 				$$->right = NULL;
 				strcpy($$->token, "CONST");
 				strcpy($$->lexeme, "INT");
-				strcpy($$->temp_var, genTemp());
+				genTemp();
+				strcpy($$->temp_var, temp_var_g);
 				printf("%s = %i\n", $$->temp_var, $$->ival);
 			};
 
@@ -438,6 +523,7 @@ int yyerror(char *s){
 
 int main(int argc, char* argv[])
 {
+	
 	if(argc > 1)
 	{
 		FILE *fp = fopen(argv[1], "r");
@@ -491,18 +577,22 @@ void printNode(struct I_Node *root)
 	}
 }
 
+void freeTree(struct I_Node *root){
+	if (root) {
+        freeTree(root->left);
+        freeTree(root->right);
+        free(root);
+    }
+}
+
 char *genTemp()
 {
-	char temp[20];
-	sprintf(temp, "t%d", temp_count);
+	sprintf(temp_var_g, "t%d", temp_count);
 	temp_count++;
-	return temp;
 }
 
 char *genLabel()
 {
-	char label[20];
-	sprintf(label, "L%d", label_count);
+	sprintf(label_g, "L%d", label_count);
 	label_count++;
-	return label;
 }
