@@ -1,0 +1,544 @@
+   0  $accept : slist $end
+
+   1  $$1 :
+
+   2  slist : stmt SEMICOLON $$1 slist
+
+   3  $$2 :
+
+   4  slist : error $$2 SEMICOLON slist
+   5        |
+
+   6  stmt : variable ASSIGN additiveexpression
+
+   7  variable : IDENTIFIER
+   8           | LPAREN variable RPAREN
+
+   9  additiveexpression : multiplicativeexpression
+  10                     | additiveexpression ADD multiplicativeexpression
+  11                     | additiveexpression SUB multiplicativeexpression
+
+  12  multiplicativeexpression : unaryexpression
+  13                           | multiplicativeexpression MUL unaryexpression
+  14                           | multiplicativeexpression DIV unaryexpression
+
+  15  unaryexpression : postfixexpression
+  16                  | INC unaryexpression
+  17                  | DEC unaryexpression
+  18                  | ADD unaryexpression
+  19                  | SUB unaryexpression
+
+  20  postfixexpression : primaryexpression
+  21                    | postfixexpression INC
+  22                    | postfixexpression DEC
+
+  23  primaryexpression : constant
+  24                    | IDENTIFIER
+  25                    | LPAREN additiveexpression RPAREN
+
+  26  constant : INTEGER
+
+state 0
+	$accept : . slist $end  (0)
+	slist : .  (5)
+
+	error  shift 1
+	LPAREN  shift 2
+	IDENTIFIER  shift 3
+	$end  reduce 5
+
+	slist  goto 4
+	stmt  goto 5
+	variable  goto 6
+
+
+state 1
+	slist : error . $$2 SEMICOLON slist  (4)
+	$$2 : .  (3)
+
+	.  reduce 3
+
+	$$2  goto 7
+
+
+state 2
+	variable : LPAREN . variable RPAREN  (8)
+
+	LPAREN  shift 2
+	IDENTIFIER  shift 3
+	.  error
+
+	variable  goto 8
+
+
+state 3
+	variable : IDENTIFIER .  (7)
+
+	.  reduce 7
+
+
+state 4
+	$accept : slist . $end  (0)
+
+	$end  accept
+
+
+state 5
+	slist : stmt . SEMICOLON $$1 slist  (2)
+
+	SEMICOLON  shift 9
+	.  error
+
+
+state 6
+	stmt : variable . ASSIGN additiveexpression  (6)
+
+	ASSIGN  shift 10
+	.  error
+
+
+state 7
+	slist : error $$2 . SEMICOLON slist  (4)
+
+	SEMICOLON  shift 11
+	.  error
+
+
+state 8
+	variable : LPAREN variable . RPAREN  (8)
+
+	RPAREN  shift 12
+	.  error
+
+
+state 9
+	slist : stmt SEMICOLON . $$1 slist  (2)
+	$$1 : .  (1)
+
+	.  reduce 1
+
+	$$1  goto 13
+
+
+state 10
+	stmt : variable ASSIGN . additiveexpression  (6)
+
+	ADD  shift 14
+	SUB  shift 15
+	INC  shift 16
+	DEC  shift 17
+	LPAREN  shift 18
+	INTEGER  shift 19
+	IDENTIFIER  shift 20
+	.  error
+
+	additiveexpression  goto 21
+	multiplicativeexpression  goto 22
+	unaryexpression  goto 23
+	postfixexpression  goto 24
+	primaryexpression  goto 25
+	constant  goto 26
+
+
+state 11
+	slist : error $$2 SEMICOLON . slist  (4)
+	slist : .  (5)
+
+	error  shift 1
+	LPAREN  shift 2
+	IDENTIFIER  shift 3
+	$end  reduce 5
+
+	slist  goto 27
+	stmt  goto 5
+	variable  goto 6
+
+
+state 12
+	variable : LPAREN variable RPAREN .  (8)
+
+	.  reduce 8
+
+
+state 13
+	slist : stmt SEMICOLON $$1 . slist  (2)
+	slist : .  (5)
+
+	error  shift 1
+	LPAREN  shift 2
+	IDENTIFIER  shift 3
+	$end  reduce 5
+
+	slist  goto 28
+	stmt  goto 5
+	variable  goto 6
+
+
+state 14
+	unaryexpression : ADD . unaryexpression  (18)
+
+	ADD  shift 14
+	SUB  shift 15
+	INC  shift 16
+	DEC  shift 17
+	LPAREN  shift 18
+	INTEGER  shift 19
+	IDENTIFIER  shift 20
+	.  error
+
+	unaryexpression  goto 29
+	postfixexpression  goto 24
+	primaryexpression  goto 25
+	constant  goto 26
+
+
+state 15
+	unaryexpression : SUB . unaryexpression  (19)
+
+	ADD  shift 14
+	SUB  shift 15
+	INC  shift 16
+	DEC  shift 17
+	LPAREN  shift 18
+	INTEGER  shift 19
+	IDENTIFIER  shift 20
+	.  error
+
+	unaryexpression  goto 30
+	postfixexpression  goto 24
+	primaryexpression  goto 25
+	constant  goto 26
+
+
+state 16
+	unaryexpression : INC . unaryexpression  (16)
+
+	ADD  shift 14
+	SUB  shift 15
+	INC  shift 16
+	DEC  shift 17
+	LPAREN  shift 18
+	INTEGER  shift 19
+	IDENTIFIER  shift 20
+	.  error
+
+	unaryexpression  goto 31
+	postfixexpression  goto 24
+	primaryexpression  goto 25
+	constant  goto 26
+
+
+state 17
+	unaryexpression : DEC . unaryexpression  (17)
+
+	ADD  shift 14
+	SUB  shift 15
+	INC  shift 16
+	DEC  shift 17
+	LPAREN  shift 18
+	INTEGER  shift 19
+	IDENTIFIER  shift 20
+	.  error
+
+	unaryexpression  goto 32
+	postfixexpression  goto 24
+	primaryexpression  goto 25
+	constant  goto 26
+
+
+state 18
+	primaryexpression : LPAREN . additiveexpression RPAREN  (25)
+
+	ADD  shift 14
+	SUB  shift 15
+	INC  shift 16
+	DEC  shift 17
+	LPAREN  shift 18
+	INTEGER  shift 19
+	IDENTIFIER  shift 20
+	.  error
+
+	additiveexpression  goto 33
+	multiplicativeexpression  goto 22
+	unaryexpression  goto 23
+	postfixexpression  goto 24
+	primaryexpression  goto 25
+	constant  goto 26
+
+
+state 19
+	constant : INTEGER .  (26)
+
+	.  reduce 26
+
+
+state 20
+	primaryexpression : IDENTIFIER .  (24)
+
+	.  reduce 24
+
+
+state 21
+	stmt : variable ASSIGN additiveexpression .  (6)
+	additiveexpression : additiveexpression . ADD multiplicativeexpression  (10)
+	additiveexpression : additiveexpression . SUB multiplicativeexpression  (11)
+
+	ADD  shift 34
+	SUB  shift 35
+	SEMICOLON  reduce 6
+
+
+state 22
+	additiveexpression : multiplicativeexpression .  (9)
+	multiplicativeexpression : multiplicativeexpression . MUL unaryexpression  (13)
+	multiplicativeexpression : multiplicativeexpression . DIV unaryexpression  (14)
+
+	MUL  shift 36
+	DIV  shift 37
+	ADD  reduce 9
+	SUB  reduce 9
+	RPAREN  reduce 9
+	SEMICOLON  reduce 9
+
+
+state 23
+	multiplicativeexpression : unaryexpression .  (12)
+
+	.  reduce 12
+
+
+state 24
+	unaryexpression : postfixexpression .  (15)
+	postfixexpression : postfixexpression . INC  (21)
+	postfixexpression : postfixexpression . DEC  (22)
+
+	INC  shift 38
+	DEC  shift 39
+	ADD  reduce 15
+	SUB  reduce 15
+	MUL  reduce 15
+	DIV  reduce 15
+	RPAREN  reduce 15
+	SEMICOLON  reduce 15
+
+
+state 25
+	postfixexpression : primaryexpression .  (20)
+
+	.  reduce 20
+
+
+state 26
+	primaryexpression : constant .  (23)
+
+	.  reduce 23
+
+
+state 27
+	slist : error $$2 SEMICOLON slist .  (4)
+
+	.  reduce 4
+
+
+state 28
+	slist : stmt SEMICOLON $$1 slist .  (2)
+
+	.  reduce 2
+
+
+state 29
+	unaryexpression : ADD unaryexpression .  (18)
+
+	.  reduce 18
+
+
+state 30
+	unaryexpression : SUB unaryexpression .  (19)
+
+	.  reduce 19
+
+
+state 31
+	unaryexpression : INC unaryexpression .  (16)
+
+	.  reduce 16
+
+
+state 32
+	unaryexpression : DEC unaryexpression .  (17)
+
+	.  reduce 17
+
+
+state 33
+	additiveexpression : additiveexpression . ADD multiplicativeexpression  (10)
+	additiveexpression : additiveexpression . SUB multiplicativeexpression  (11)
+	primaryexpression : LPAREN additiveexpression . RPAREN  (25)
+
+	ADD  shift 34
+	SUB  shift 35
+	RPAREN  shift 40
+	.  error
+
+
+state 34
+	additiveexpression : additiveexpression ADD . multiplicativeexpression  (10)
+
+	ADD  shift 14
+	SUB  shift 15
+	INC  shift 16
+	DEC  shift 17
+	LPAREN  shift 18
+	INTEGER  shift 19
+	IDENTIFIER  shift 20
+	.  error
+
+	multiplicativeexpression  goto 41
+	unaryexpression  goto 23
+	postfixexpression  goto 24
+	primaryexpression  goto 25
+	constant  goto 26
+
+
+state 35
+	additiveexpression : additiveexpression SUB . multiplicativeexpression  (11)
+
+	ADD  shift 14
+	SUB  shift 15
+	INC  shift 16
+	DEC  shift 17
+	LPAREN  shift 18
+	INTEGER  shift 19
+	IDENTIFIER  shift 20
+	.  error
+
+	multiplicativeexpression  goto 42
+	unaryexpression  goto 23
+	postfixexpression  goto 24
+	primaryexpression  goto 25
+	constant  goto 26
+
+
+state 36
+	multiplicativeexpression : multiplicativeexpression MUL . unaryexpression  (13)
+
+	ADD  shift 14
+	SUB  shift 15
+	INC  shift 16
+	DEC  shift 17
+	LPAREN  shift 18
+	INTEGER  shift 19
+	IDENTIFIER  shift 20
+	.  error
+
+	unaryexpression  goto 43
+	postfixexpression  goto 24
+	primaryexpression  goto 25
+	constant  goto 26
+
+
+state 37
+	multiplicativeexpression : multiplicativeexpression DIV . unaryexpression  (14)
+
+	ADD  shift 14
+	SUB  shift 15
+	INC  shift 16
+	DEC  shift 17
+	LPAREN  shift 18
+	INTEGER  shift 19
+	IDENTIFIER  shift 20
+	.  error
+
+	unaryexpression  goto 44
+	postfixexpression  goto 24
+	primaryexpression  goto 25
+	constant  goto 26
+
+
+state 38
+	postfixexpression : postfixexpression INC .  (21)
+
+	.  reduce 21
+
+
+state 39
+	postfixexpression : postfixexpression DEC .  (22)
+
+	.  reduce 22
+
+
+state 40
+	primaryexpression : LPAREN additiveexpression RPAREN .  (25)
+
+	.  reduce 25
+
+
+state 41
+	additiveexpression : additiveexpression ADD multiplicativeexpression .  (10)
+	multiplicativeexpression : multiplicativeexpression . MUL unaryexpression  (13)
+	multiplicativeexpression : multiplicativeexpression . DIV unaryexpression  (14)
+
+	MUL  shift 36
+	DIV  shift 37
+	ADD  reduce 10
+	SUB  reduce 10
+	RPAREN  reduce 10
+	SEMICOLON  reduce 10
+
+
+state 42
+	additiveexpression : additiveexpression SUB multiplicativeexpression .  (11)
+	multiplicativeexpression : multiplicativeexpression . MUL unaryexpression  (13)
+	multiplicativeexpression : multiplicativeexpression . DIV unaryexpression  (14)
+
+	MUL  shift 36
+	DIV  shift 37
+	ADD  reduce 11
+	SUB  reduce 11
+	RPAREN  reduce 11
+	SEMICOLON  reduce 11
+
+
+state 43
+	multiplicativeexpression : multiplicativeexpression MUL unaryexpression .  (13)
+
+	.  reduce 13
+
+
+state 44
+	multiplicativeexpression : multiplicativeexpression DIV unaryexpression .  (14)
+
+	.  reduce 14
+
+
+14 terminals, 12 nonterminals
+27 grammar rules, 45 states
+
+grammar parser grammar
+symbol# value# symbol
+     0      0  $end
+     1    256  error
+     2    257  ADD
+     3    258  SUB
+     4    259  MUL
+     5    260  DIV
+     6    261  INC
+     7    262  DEC
+     8    263  ASSIGN
+     9    264  LPAREN
+    10    265  RPAREN
+    11    266  SEMICOLON
+    12    267  INTEGER
+    13    268  IDENTIFIER
+    14    269  $accept
+    15    270  slist
+    16    271  stmt
+    17    272  variable
+    18    273  additiveexpression
+    19    274  multiplicativeexpression
+    20    275  unaryexpression
+    21    276  postfixexpression
+    22    277  primaryexpression
+    23    278  constant
+    24    279  $$1
+    25    280  $$2

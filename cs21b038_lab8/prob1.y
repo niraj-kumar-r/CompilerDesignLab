@@ -53,7 +53,7 @@ slist : 	assignmentexpression SEMICOLON {
 				}
 				$$ = $1;
 			} slist
-			| IF LPAREN booleanexpression {
+			| IF LPAREN booleanexpression RPAREN LBRACE {
 				$$ = malloc(sizeof(struct I_Node));
 				if ($$ == NULL) {
 					yyerror("no mem");
@@ -72,8 +72,6 @@ slist : 	assignmentexpression SEMICOLON {
 
 				printf("if %s goto %s\n", $3->temp_var, $$->true_label);
 				printf("goto %s\n\n", $$->false_label);
-
-			} RPAREN LBRACE {
 				printf("\n\n%s:\n\n", $3->true_label);
 			} slist {
 				printf("goto %s\n\n", $3->next_label);
