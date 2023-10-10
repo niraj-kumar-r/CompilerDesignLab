@@ -97,7 +97,7 @@ assignmentexpression 	:	variable ASSIGN additiveexpression {
 								strcpy($$->lexeme, "=");
 								genTemp();
 								strcpy($$->temp_var, temp_var_g);
-								printf("%s = %s\n", $1->temp_var, $3->temp_var);
+								printf("%s = %s\n", $1->lexeme, $3->temp_var);
 							}
 							| variable INC{
 								$$ = malloc(sizeof(struct I_Node));
