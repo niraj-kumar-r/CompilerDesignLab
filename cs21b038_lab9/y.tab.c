@@ -32,24 +32,43 @@ char temp_var_g[20];
 char label_g[20];
 extern FILE * yyin;
 
-struct I_Node{
-	struct I_Node *left, *right, *cond;
-	char token[20];
-	char lexeme[20];
-	char temp_var[20];
-	char true_label[20];
-	char false_label[20];
-	char next_label[20];
-	int ival;
-};
+typedef struct ASTNode {
+    enum { 
+        NODETYPE_CONSTANT_INT, 
+        NODETYPE_IDENTIFIER, 
+        NODETYPE_OPERATOR,
+        NODETYPE_IF_ELSE,
+        NODETYPE_WHILE
+    } token;
 
-void postorder(struct I_Node *root);
-void inorder(struct I_Node *root);
-void preorder(struct I_Node *root);
-void printNode(struct I_Node *root);
-void freeTree(struct I_Node *root);
-char *genTemp();
-char *genLabel();
+    union {
+        int intValue;
+        char lexeme[20];
+        struct {
+            char op[20];
+            struct ASTNode* left;
+            struct ASTNode* right;
+        } opInfo;
+        struct {
+            struct ASTNode* condition;
+			char condition_label[20];
+            struct ASTNode* trueBranch;
+			char true_label[20];
+            struct ASTNode* falseBranch;
+			char false_label[20];
+            struct ASTNode* nextBranch;
+			char next_label[20];
+        } flowControlInfo;
+    } info;
+
+	char temp_var[20];
+} ASTNode;
+
+/* slist : assignmentExpression SEMICOLON {printf("\nAccepted assignment Expression");} slist
+		| selectionStatement {printf("\nAccepted selection statement");} slist
+		| iterationStatement {printf("\nAccepted iteration statement");} slist
+		|error SEMICOLON {printf("\nRejected");} slist
+		| {printf("\n");}; */
 
 #ifdef YYSTYPE
 #undef  YYSTYPE_IS_DECLARED
@@ -57,14 +76,14 @@ char *genLabel();
 #endif
 #ifndef YYSTYPE_IS_DECLARED
 #define YYSTYPE_IS_DECLARED 1
-#line 35 "prob1.y"
+#line 53 "prob1.y"
 typedef union YYSTYPE{
-	int ival;
+	int intValue;
 	char lexeme[20];
-	struct I_Node *node;
+	struct ASTNode *node;
 } YYSTYPE;
 #endif /* !YYSTYPE_IS_DECLARED */
-#line 68 "y.tab.c"
+#line 87 "y.tab.c"
 
 /* compatibility with bison */
 #ifdef YYPARSE_PARAM
@@ -132,72 +151,64 @@ extern int YYPARSE_DECL();
 #define YYERRCODE 256
 typedef int YYINT;
 static const YYINT yylhs[] = {                           -1,
-   10,    0,   11,   12,   13,   14,    0,   15,   16,   17,
-    0,   18,    0,    0,    1,    1,    1,    1,    1,    2,
-    2,    9,    9,    9,    9,    9,    9,    9,    9,    9,
-    9,    3,    3,    3,    4,    4,    4,    5,    5,    5,
-    5,    5,    6,    6,    6,    7,    7,    7,    8,
+    0,    1,    1,    1,    1,    1,    2,    2,    3,    4,
+    4,    5,    5,    6,    6,    6,    7,    7,    7,    7,
+    7,    8,    8,    8,    9,    9,    9,   10,   10,   10,
+   10,   10,   10,   11,   11,   11,   12,   12,   12,   13,
+   13,   14,
 };
 static const YYINT yylen[] = {                            2,
-    0,    4,    0,    0,    0,    0,   16,    0,    0,    0,
-   11,    0,    4,    0,    3,    2,    2,    2,    2,    1,
-    3,    1,    3,    3,    3,    3,    3,    3,    3,    3,
-    2,    1,    3,    3,    1,    3,    3,    1,    2,    2,
-    2,    2,    1,    2,    2,    1,    1,    3,    1,
+    1,    3,    2,    2,    2,    0,    1,    3,    1,    1,
+    3,    1,    3,    1,    3,    3,    1,    3,    3,    3,
+    3,    1,    3,    3,    1,    3,    3,    1,    2,    2,
+    2,    2,    2,    1,    2,    2,    1,    1,    3,    7,
+   11,    7,
 };
-static const YYINT yydefred[] = {                         0,
-   12,    0,    0,    0,    0,    0,   20,    0,    0,    0,
-    0,   18,   19,    0,    0,    8,    1,   16,   17,    0,
-    0,   21,    0,    0,   49,   47,    0,   46,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,   35,    0,   43,
-   13,    0,   31,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    9,    2,   41,   42,   39,   40,    0,    0,
-    0,    0,   44,   45,   48,   23,   24,   25,   26,   27,
-   28,   29,   30,    3,    0,    0,    0,   36,   37,    0,
-    0,    4,    0,    0,   10,    0,    0,    0,    0,    5,
-   11,    0,    0,    6,    0,    7,
+static const YYINT yydefred[] = {                         6,
+    0,    0,    5,    0,    0,    0,    0,    0,    0,    0,
+    0,   37,   38,    0,    7,    0,    0,    0,    0,    0,
+    0,    0,    0,   34,    3,    4,   31,   32,   29,   30,
+    0,    0,    0,   33,    2,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,   35,   36,
+   39,    0,    0,    0,   25,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,   26,   27,    8,    0,    0,    6,
+    6,    0,    0,    0,   42,    0,    6,    0,   41,
 };
 #if defined(YYDESTRUCT_CALL) || defined(YYSTYPE_TOSTRING)
 static const YYINT yystos[] = {                           0,
-  256,  261,  262,  264,  271,  273,  284,  286,  287,  288,
-  304,  288,  288,  288,  264,  264,  270,  261,  262,  263,
-  270,  265,  264,  282,  283,  284,  293,  294,  295,  301,
-  296,  257,  258,  261,  262,  289,  290,  291,  292,  293,
-  286,  289,  293,  274,  275,  276,  277,  278,  279,  280,
-  281,  265,  295,  286,  291,  291,  291,  291,  257,  258,
-  259,  260,  261,  262,  265,  293,  293,  293,  293,  293,
-  293,  293,  293,  266,  302,  290,  290,  291,  291,  297,
-  265,  286,  266,  298,  286,  267,  303,  272,  267,  266,
-  286,  299,  286,  267,  300,  286,
+  286,  287,  256,  257,  258,  261,  262,  264,  271,  273,
+  282,  283,  284,  288,  289,  290,  291,  292,  293,  294,
+  295,  296,  297,  298,  299,  300,  296,  296,  296,  296,
+  288,  264,  264,  296,  270,  281,  280,  278,  279,  274,
+  275,  276,  277,  257,  258,  259,  260,  263,  261,  262,
+  265,  288,  288,  291,  296,  292,  293,  293,  294,  294,
+  294,  294,  295,  295,  296,  296,  288,  265,  265,  266,
+  266,  287,  287,  267,  267,  272,  266,  287,  267,
 };
 #endif /* YYDESTRUCT_CALL || YYSTYPE_TOSTRING */
-static const YYINT yydgoto[] = {                          8,
-    9,   10,   36,   37,   38,   39,   40,   28,   29,   31,
-   80,   84,   92,   95,   30,   75,   87,   11,
+static const YYINT yydgoto[] = {                          1,
+    2,   14,   15,   16,   17,   18,   19,   20,   21,   55,
+   23,   24,   25,   26,
 };
-static const YYINT yysindex[] = {                      -217,
-    0, -256, -256, -256, -255, -248,    0,    0, -249, -243,
- -240,    0,    0, -225, -218,    0,    0,    0,    0, -235,
- -217,    0, -235, -259,    0,    0, -184,    0, -222, -218,
- -217, -235, -235, -235, -235, -254, -253,    0, -201,    0,
-    0, -179,    0, -259, -259, -259, -259, -259, -259, -259,
- -259, -211,    0,    0,    0,    0,    0,    0, -235, -235,
- -235, -235,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0, -208, -253, -253,    0,    0, -217,
- -177,    0, -217, -186,    0, -169, -183, -162, -217,    0,
-    0, -217, -180,    0, -217,    0,
+static const YYINT yysindex[] = {                         0,
+    0, -150,    0, -142, -142, -142, -142, -142, -246, -243,
+ -142,    0,    0, -241,    0, -256, -247, -255, -122, -198,
+ -191, -227, -175,    0,    0,    0,    0,    0,    0,    0,
+ -211, -142, -142,    0,    0, -142, -142, -142, -142, -142,
+ -142, -142, -142, -142, -142, -142, -142, -142,    0,    0,
+    0, -208, -204, -247,    0, -255, -122, -122, -198, -198,
+ -198, -198, -191, -191,    0,    0,    0, -203, -201,    0,
+    0, -245, -209, -200,    0, -176,    0, -179,    0,
 };
-static const YYINT yyrindex[] = {                       105,
+static const YYINT yyrindex[] = {                         0,
+    0,   91,    0,    0,    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0, -250, -134, -214, -238,   29,
+  -64,  -89, -114,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    1,    0,    0,    0,    0,    0, -225,    0,    0,    0,
-    1,    0,    0,    0,    0, -164, -188,    0, -207,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0, -185, -182,    0,    0, -160,
-    0,    0, -160,    0,    0,    0,    0,    0,    1,    0,
-    0, -160,    0,    0,    1,    0,
+    0,    0,    0,  -86,    0,  -37, -181, -152,   46,   63,
+   80,   97,  -39,   12,    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    1,    0,    0,    0,    0,    0,
 };
 #if YYBTYACC
 static const YYINT yycindex[] = {                         0,
@@ -208,73 +219,93 @@ static const YYINT yycindex[] = {                         0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,
 };
 #endif
-static const YYINT yygindex[] = {                       -21,
-    0,   96,   85,   42,  -20,    0,  -13,    0,   79,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,
+static const YYINT yygindex[] = {                         0,
+  -63,    2,    0,    0,   57,   64,   42,  132,   51,   -2,
+    0,    0,    0,    0,
 };
-#define YYTABLESIZE 268
-static const YYINT yytable[] = {                         41,
-   14,   27,   59,   60,   23,   61,   62,    4,   15,   54,
-   43,   55,   56,   57,   58,   16,   27,   18,   19,   20,
-   17,   32,   33,   25,   26,   34,   35,    7,   23,   21,
-   66,   67,   68,   69,   70,   71,   72,   73,    1,   22,
-   78,   79,   52,    2,    3,   23,    4,   25,   26,   38,
-   38,   38,   38,    5,   74,    6,   81,   38,   82,   63,
-   64,   85,   38,   24,   25,   26,    7,   91,   32,   32,
-   93,   33,   33,   96,   34,   34,   32,   59,   60,   33,
-   86,   32,   34,   89,   33,   65,   94,   34,   83,   44,
-   45,   46,   47,   48,   49,   50,   51,   12,   13,   14,
-   76,   77,   88,   90,   14,   15,   14,   42,   53,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,   14,
+#define YYTABLESIZE 378
+static const YYINT yytable[] = {                         22,
+   40,   27,   28,   29,   30,   22,   72,   73,   34,   31,
+    3,    4,    5,   78,    9,    6,    7,   32,    8,    9,
+   33,   74,   38,   39,   36,    9,   14,   10,   35,   22,
+   22,   14,   37,   52,   53,   48,   11,   12,   13,   14,
+   14,   14,   14,   65,   66,   22,    3,    4,    5,   67,
+   12,    6,    7,   51,    8,   12,   68,   75,   44,   45,
+   69,    9,   70,   10,   71,   12,   12,   46,   47,   22,
+   22,   76,   11,   12,   13,   22,    3,    4,    5,   57,
+   58,    6,    7,   15,    8,   49,   50,   79,   15,   77,
+    1,    9,   54,   10,   63,   64,   15,   15,   15,   15,
+   56,    0,   11,   12,   13,    3,    4,    5,    0,    0,
+    6,    7,   16,    8,    4,    5,    0,   16,    6,    7,
+    9,    8,   10,    0,    0,   16,   16,   16,   16,    0,
+   10,   11,   12,   13,    0,   10,    0,    0,    0,   11,
+   12,   13,   28,   28,   28,   28,   10,    0,   28,    0,
+   28,   40,   41,   42,   43,   28,    0,    0,    0,   28,
+   28,   28,   28,   28,   28,   28,   28,   25,   25,   25,
+   25,   59,   60,   61,   62,   25,    0,    0,   11,    0,
+   25,    0,    0,   11,   25,   25,   25,   25,   25,   25,
+   25,   25,   22,   22,   11,    0,    0,    0,    0,    0,
+   22,    0,    0,    0,    0,   22,    0,    0,    0,   22,
+   22,   22,   22,   22,   22,   22,   22,   23,   23,    0,
+    0,    0,    0,    0,    0,   23,    0,   13,    0,    0,
+   23,    0,   13,    0,   23,   23,   23,   23,   23,   23,
+   23,   23,   13,   13,    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,   40,   40,   40,    0,
+    0,   40,   40,    0,   40,    0,    0,   40,   24,   24,
+    0,   40,    0,   40,    0,    0,   24,    0,    0,    0,
+    0,   24,   40,   40,   40,   24,   24,   24,   24,   24,
+   24,   24,   24,   17,    0,    0,    0,    0,   17,    0,
+    0,    0,   17,   17,   17,   17,   17,   17,   17,   17,
+   18,    0,    0,    0,    0,   18,    0,    0,    0,   18,
+   18,   18,   18,   18,   18,   18,   18,   19,    0,    0,
+    0,    0,   19,    0,    0,    0,   19,   19,   19,   19,
+   19,   19,   19,   19,   20,    0,    0,    0,    0,   20,
+    0,    0,    0,   20,   20,   20,   20,   20,   20,   20,
+   20,   21,    0,    0,    0,    0,   21,    0,    0,    0,
+   21,   21,   21,   21,   21,   21,   21,   21,
 };
-static const YYINT yycheck[] = {                         21,
-    0,   15,  257,  258,  264,  259,  260,  264,  264,   31,
-   24,   32,   33,   34,   35,  264,   30,  261,  262,  263,
-  270,  257,  258,  283,  284,  261,  262,  284,  264,  270,
-   44,   45,   46,   47,   48,   49,   50,   51,  256,  265,
-   61,   62,  265,  261,  262,  264,  264,  283,  284,  257,
-  258,  259,  260,  271,  266,  273,  265,  265,   80,  261,
-  262,   83,  270,  282,  283,  284,  284,   89,  257,  258,
-   92,  257,  258,   95,  257,  258,  265,  257,  258,  265,
-  267,  270,  265,  267,  270,  265,  267,  270,  266,  274,
-  275,  276,  277,  278,  279,  280,  281,    2,    3,    4,
-   59,   60,  272,  266,    0,  270,  267,   23,   30,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,  267,
+static const YYINT yycheck[] = {                          2,
+    0,    4,    5,    6,    7,    8,   70,   71,   11,    8,
+  256,  257,  258,   77,  265,  261,  262,  264,  264,  270,
+  264,  267,  278,  279,  281,  271,  265,  273,  270,   32,
+   33,  270,  280,   32,   33,  263,  282,  283,  284,  278,
+  279,  280,  281,   46,   47,   48,  256,  257,  258,   48,
+  265,  261,  262,  265,  264,  270,  265,  267,  257,  258,
+  265,  271,  266,  273,  266,  280,  281,  259,  260,   72,
+   73,  272,  282,  283,  284,   78,  256,  257,  258,   38,
+   39,  261,  262,  265,  264,  261,  262,  267,  270,  266,
+    0,  271,   36,  273,   44,   45,  278,  279,  280,  281,
+   37,   -1,  282,  283,  284,  256,  257,  258,   -1,   -1,
+  261,  262,  265,  264,  257,  258,   -1,  270,  261,  262,
+  271,  264,  273,   -1,   -1,  278,  279,  280,  281,   -1,
+  265,  282,  283,  284,   -1,  270,   -1,   -1,   -1,  282,
+  283,  284,  257,  258,  259,  260,  281,   -1,  263,   -1,
+  265,  274,  275,  276,  277,  270,   -1,   -1,   -1,  274,
+  275,  276,  277,  278,  279,  280,  281,  257,  258,  259,
+  260,   40,   41,   42,   43,  265,   -1,   -1,  265,   -1,
+  270,   -1,   -1,  270,  274,  275,  276,  277,  278,  279,
+  280,  281,  257,  258,  281,   -1,   -1,   -1,   -1,   -1,
+  265,   -1,   -1,   -1,   -1,  270,   -1,   -1,   -1,  274,
+  275,  276,  277,  278,  279,  280,  281,  257,  258,   -1,
+   -1,   -1,   -1,   -1,   -1,  265,   -1,  265,   -1,   -1,
+  270,   -1,  270,   -1,  274,  275,  276,  277,  278,  279,
+  280,  281,  280,  281,   -1,   -1,   -1,   -1,   -1,   -1,
+   -1,   -1,   -1,   -1,   -1,   -1,  256,  257,  258,   -1,
+   -1,  261,  262,   -1,  264,   -1,   -1,  267,  257,  258,
+   -1,  271,   -1,  273,   -1,   -1,  265,   -1,   -1,   -1,
+   -1,  270,  282,  283,  284,  274,  275,  276,  277,  278,
+  279,  280,  281,  265,   -1,   -1,   -1,   -1,  270,   -1,
+   -1,   -1,  274,  275,  276,  277,  278,  279,  280,  281,
+  265,   -1,   -1,   -1,   -1,  270,   -1,   -1,   -1,  274,
+  275,  276,  277,  278,  279,  280,  281,  265,   -1,   -1,
+   -1,   -1,  270,   -1,   -1,   -1,  274,  275,  276,  277,
+  278,  279,  280,  281,  265,   -1,   -1,   -1,   -1,  270,
+   -1,   -1,   -1,  274,  275,  276,  277,  278,  279,  280,
+  281,  265,   -1,   -1,   -1,   -1,  270,   -1,   -1,   -1,
+  274,  275,  276,  277,  278,  279,  280,  281,
 };
 #if YYBTYACC
 static const YYINT yyctable[] = {                        -1,
@@ -304,15 +335,26 @@ static const YYINT yyctable[] = {                        -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,
 };
 #endif
-#define YYFINAL 8
+#define YYFINAL 1
 #ifndef YYDEBUG
 #define YYDEBUG 1
 #endif
 #define YYMAXTOKEN 284
-#define YYUNDFTOKEN 305
+#define YYUNDFTOKEN 301
 #define YYTRANSLATE(a) ((a) > YYMAXTOKEN ? YYUNDFTOKEN : (a))
 #if YYDEBUG
 static const char *const yyname[] = {
@@ -326,62 +368,56 @@ static const char *const yyname[] = {
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"error","ADD","SUB","MUL","DIV","INC",
 "DEC","ASSIGN","LPAREN","RPAREN","LBRACE","RBRACE","LBRACKET","RBRACKET",
 "SEMICOLON","IF","ELSE","WHILE","LT","GT","LEQ","GEQ","EQ","NEQ","AND","OR",
-"NOT","INTEGER","IDENTIFIER","$accept","slist","assignmentexpression",
-"variable","additiveexpression","multiplicativeexpression","unaryexpression",
-"postfixexpression","primaryexpression","constant","booleanexpression","$$1",
-"$$2","$$3","$$4","$$5","$$6","$$7","$$8","$$9","illegal-symbol",
+"NOT","INTEGER","IDENTIFIER","$accept","program","slist","assignmentExpression",
+"conditionalExpression","logicalOrExpression","logicalAndExpression",
+"equalityExpression","relationalExpression","additiveExpression",
+"multiplicativeExpression","unaryExpression","postfixExpression",
+"primaryExpression","selectionStatement","iterationStatement","illegal-symbol",
 };
 static const char *const yyrule[] = {
-"$accept : slist",
-"$$1 :",
-"slist : assignmentexpression SEMICOLON $$1 slist",
-"$$2 :",
-"$$3 :",
-"$$4 :",
-"$$5 :",
-"slist : IF LPAREN booleanexpression RPAREN LBRACE $$2 slist $$3 RBRACE ELSE LBRACE $$4 slist RBRACE $$5 slist",
-"$$6 :",
-"$$7 :",
-"$$8 :",
-"slist : WHILE LPAREN $$6 booleanexpression $$7 RPAREN LBRACE slist $$8 RBRACE slist",
-"$$9 :",
-"slist : error $$9 SEMICOLON slist",
+"$accept : program",
+"program : slist",
+"slist : slist assignmentExpression SEMICOLON",
+"slist : slist selectionStatement",
+"slist : slist iterationStatement",
+"slist : slist error",
 "slist :",
-"assignmentexpression : variable ASSIGN additiveexpression",
-"assignmentexpression : variable INC",
-"assignmentexpression : variable DEC",
-"assignmentexpression : INC variable",
-"assignmentexpression : DEC variable",
-"variable : IDENTIFIER",
-"variable : LPAREN variable RPAREN",
-"booleanexpression : primaryexpression",
-"booleanexpression : primaryexpression LT primaryexpression",
-"booleanexpression : primaryexpression GT primaryexpression",
-"booleanexpression : primaryexpression LEQ primaryexpression",
-"booleanexpression : primaryexpression GEQ primaryexpression",
-"booleanexpression : primaryexpression EQ primaryexpression",
-"booleanexpression : primaryexpression NEQ primaryexpression",
-"booleanexpression : primaryexpression AND primaryexpression",
-"booleanexpression : primaryexpression OR primaryexpression",
-"booleanexpression : NOT primaryexpression",
-"additiveexpression : multiplicativeexpression",
-"additiveexpression : additiveexpression ADD multiplicativeexpression",
-"additiveexpression : additiveexpression SUB multiplicativeexpression",
-"multiplicativeexpression : unaryexpression",
-"multiplicativeexpression : multiplicativeexpression MUL unaryexpression",
-"multiplicativeexpression : multiplicativeexpression DIV unaryexpression",
-"unaryexpression : postfixexpression",
-"unaryexpression : INC unaryexpression",
-"unaryexpression : DEC unaryexpression",
-"unaryexpression : ADD unaryexpression",
-"unaryexpression : SUB unaryexpression",
-"postfixexpression : primaryexpression",
-"postfixexpression : postfixexpression INC",
-"postfixexpression : postfixexpression DEC",
-"primaryexpression : constant",
-"primaryexpression : IDENTIFIER",
-"primaryexpression : LPAREN additiveexpression RPAREN",
-"constant : INTEGER",
+"assignmentExpression : conditionalExpression",
+"assignmentExpression : unaryExpression ASSIGN assignmentExpression",
+"conditionalExpression : logicalOrExpression",
+"logicalOrExpression : logicalAndExpression",
+"logicalOrExpression : logicalOrExpression OR logicalAndExpression",
+"logicalAndExpression : equalityExpression",
+"logicalAndExpression : logicalAndExpression AND equalityExpression",
+"equalityExpression : relationalExpression",
+"equalityExpression : equalityExpression EQ relationalExpression",
+"equalityExpression : equalityExpression NEQ relationalExpression",
+"relationalExpression : additiveExpression",
+"relationalExpression : relationalExpression LT additiveExpression",
+"relationalExpression : relationalExpression GT additiveExpression",
+"relationalExpression : relationalExpression LEQ additiveExpression",
+"relationalExpression : relationalExpression GEQ additiveExpression",
+"additiveExpression : multiplicativeExpression",
+"additiveExpression : additiveExpression ADD multiplicativeExpression",
+"additiveExpression : additiveExpression SUB multiplicativeExpression",
+"multiplicativeExpression : unaryExpression",
+"multiplicativeExpression : multiplicativeExpression MUL unaryExpression",
+"multiplicativeExpression : multiplicativeExpression DIV unaryExpression",
+"unaryExpression : postfixExpression",
+"unaryExpression : INC unaryExpression",
+"unaryExpression : DEC unaryExpression",
+"unaryExpression : ADD unaryExpression",
+"unaryExpression : SUB unaryExpression",
+"unaryExpression : NOT unaryExpression",
+"postfixExpression : primaryExpression",
+"postfixExpression : postfixExpression INC",
+"postfixExpression : postfixExpression DEC",
+"primaryExpression : INTEGER",
+"primaryExpression : IDENTIFIER",
+"primaryExpression : LPAREN assignmentExpression RPAREN",
+"selectionStatement : IF LPAREN assignmentExpression RPAREN LBRACE slist RBRACE",
+"selectionStatement : IF LPAREN assignmentExpression RPAREN LBRACE slist RBRACE ELSE LBRACE slist RBRACE",
+"iterationStatement : WHILE LPAREN assignmentExpression RPAREN LBRACE slist RBRACE",
 
 };
 #endif
@@ -513,74 +549,24 @@ static YYINT  *yylexp = 0;
 
 static YYINT  *yylexemes = 0;
 #endif /* YYBTYACC */
-#line 616 "prob1.y"
-
-int yyerror(char *s){
-    return 0;
-}
+#line 166 "prob1.y"
 
 int main(int argc, char* argv[])
 {
-	
-	if(argc > 1)
+	if(argc != 2)
 	{
-		FILE *fp = fopen(argv[1], "r");
-		if(fp)
-			yyin = fp;
+		printf("Usage: ./parser <filename>\n");
+		return 1;
 	}
+	FILE *fp = fopen(argv[1], "r");
+	if(fp == NULL)
+	{
+		printf("File not found\n");
+		return 1;
+	}
+	yyin = fp;
 	yyparse();
 	return 0;
-}
-
-void postorder(struct I_Node *root)
-{
-	if(root != NULL)
-	{
-		postorder(root->left);
-		postorder(root->right);
-		printNode(root);
-	}
-}
-
-void inorder(struct I_Node *root)
-{
-	if(root != NULL)
-	{
-		inorder(root->left);
-		printNode(root);
-		inorder(root->right);
-	}
-}
-
-void preorder(struct I_Node *root)
-{
-	if(root != NULL)
-	{
-		printNode(root);
-		preorder(root->left);
-		preorder(root->right);
-	}
-}
-
-void printNode(struct I_Node *root)
-{
-	if(root != NULL)
-	{
-		if(strcmp(root->token, "ID") == 0 || strcmp(root->token, "OP")==0 || strcmp(root->token, "ASSIGN") == 0){
-			printf("%s \t %s \n", root->token, root->lexeme);
-		}
-		else{
-			printf("%s \t %i\n", root->lexeme, root->ival);
-		}
-	}
-}
-
-void freeTree(struct I_Node *root){
-	if (root) {
-        freeTree(root->left);
-        freeTree(root->right);
-        free(root);
-    }
 }
 
 char *genTemp()
@@ -594,7 +580,7 @@ char *genLabel()
 	sprintf(label_g, "L%d", label_count);
 	label_count++;
 }
-#line 598 "y.tab.c"
+#line 584 "y.tab.c"
 
 /* For use in generated program */
 #define yydepth (int)(yystack.s_mark - yystack.s_base)
@@ -1265,746 +1251,134 @@ yyreduce:
     switch (yyn)
     {
 case 1:
-#line 49 "prob1.y"
-	{
-				if(yyval.node==NULL){
-					yyval.node = malloc(sizeof(struct I_Node));
-				}
-				if (yyval.node == NULL) {
-					yyerror("no mem");
-				}
-				yyval.node = yystack.l_mark[-1].node;
-			}
-#line 1279 "y.tab.c"
+#line 66 "prob1.y"
+	{printf("\n\nCompleted\n");}
+#line 1257 "y.tab.c"
+break;
+case 2:
+#line 68 "prob1.y"
+	{printf("\nAccepted assignment Expression");}
+#line 1262 "y.tab.c"
 break;
 case 3:
-#line 58 "prob1.y"
-	{
-				if(yyval.node==NULL){
-					yyval.node = malloc(sizeof(struct I_Node));
-				}
-				if (yyval.node == NULL) {
-					yyerror("no mem");
-				}
-				strcpy(yyval.node->token, "KEYWORD");
-				strcpy(yyval.node->lexeme, "if else");
-				genLabel();
-				strcpy(yyval.node->true_label, label_g);
-				strcpy(yystack.l_mark[-2].node->true_label, label_g);
-				genLabel();
-				strcpy(yyval.node->false_label, label_g);
-				strcpy(yystack.l_mark[-2].node->false_label, label_g);
-				genLabel();
-				strcpy(yyval.node->next_label, label_g);
-				strcpy(yystack.l_mark[-2].node->next_label, label_g);
-
-
-				printf("if %s goto %s\n", yystack.l_mark[-2].node->temp_var, yyval.node->true_label);
-				printf("goto %s\n\n", yyval.node->false_label);
-				printf("\n\n%s:\n\n", yystack.l_mark[-2].node->true_label);
-			}
-#line 1307 "y.tab.c"
+#line 69 "prob1.y"
+	{printf("\nAccepted selection statement");}
+#line 1267 "y.tab.c"
 break;
 case 4:
-#line 81 "prob1.y"
-	{
-				printf("goto %s\n\n", yystack.l_mark[-4].node->next_label);
-			}
-#line 1314 "y.tab.c"
+#line 70 "prob1.y"
+	{printf("\nAccepted iteration statement");}
+#line 1272 "y.tab.c"
 break;
 case 5:
-#line 83 "prob1.y"
-	{
-				printf("\n\n%s:\n\n", yystack.l_mark[-8].node->false_label);
-			}
-#line 1321 "y.tab.c"
+#line 71 "prob1.y"
+	{printf("\nRejected");}
+#line 1277 "y.tab.c"
 break;
 case 6:
-#line 85 "prob1.y"
-	{
-				printf("\n\n%s:\n\n", yystack.l_mark[-11].node->next_label);
-			}
-#line 1328 "y.tab.c"
-break;
-case 8:
-#line 88 "prob1.y"
-	{
-				if(yyval.node==NULL){
-					yyval.node = malloc(sizeof(struct I_Node));
-				}
-				if (yyval.node == NULL) {
-					yyerror("no mem");
-				}
-				strcpy(yyval.node->token, "KEYWORD");
-				strcpy(yyval.node->lexeme, "while");
-				genLabel();
-				strcpy(yyval.node->next_label, label_g);
-				genLabel();
-				strcpy(yyval.node->true_label, label_g);
-				genLabel();
-				strcpy(yyval.node->false_label, label_g);
-
-				printf("\n\n%s:\n\n", yyval.node->next_label);
-			}
-#line 1350 "y.tab.c"
-break;
-case 9:
-#line 105 "prob1.y"
-	{
-				printf("if %s goto %s\n", yystack.l_mark[-1].node->temp_var, yyval.node->true_label);
-				printf("goto %s\n\n", yyval.node->false_label);
-				printf("\n\n%s:\n\n", yyval.node->true_label);
-			}
-#line 1359 "y.tab.c"
-break;
-case 10:
-#line 109 "prob1.y"
-	{
-				printf("goto %s\n\n", yyval.node->next_label);
-				printf("\n\n%s:\n\n", yyval.node->false_label);
-			}
-#line 1367 "y.tab.c"
-break;
-case 12:
-#line 113 "prob1.y"
-	{ printf("\nRejected EXPR\n"); }
-#line 1372 "y.tab.c"
-break;
-case 14:
-#line 114 "prob1.y"
-	{freeTree(yyval.node);}
-#line 1377 "y.tab.c"
-break;
-case 15:
-#line 117 "prob1.y"
-	{
-								if(yyval.node==NULL){
-									yyval.node = malloc(sizeof(struct I_Node));
-								}
-								if (yyval.node == NULL) {
-									yyerror("no mem");
-								}
-								strcpy(yyval.node->lexeme, yystack.l_mark[-2].node->lexeme);
-								yyval.node->left = yystack.l_mark[-2].node;
-								yyval.node->right = yystack.l_mark[0].node;
-								yyval.node->ival = yystack.l_mark[0].node->ival;
-								strcpy(yyval.node->token,"ASSIGN");
-								strcpy(yyval.node->lexeme, "=");
-								genTemp();
-								strcpy(yyval.node->temp_var, temp_var_g);
-								printf("%s = %s\n", yystack.l_mark[-2].node->lexeme, yystack.l_mark[0].node->temp_var);
-							}
-#line 1398 "y.tab.c"
-break;
-case 16:
-#line 134 "prob1.y"
-	{
-								if(yyval.node==NULL){
-									yyval.node = malloc(sizeof(struct I_Node));
-								}
-								if (yyval.node == NULL) {
-									yyerror("no mem");
-								}
-								yyval.node->left = yystack.l_mark[-1].node;
-								yyval.node->right = NULL;
-								yyval.node->ival = yystack.l_mark[-1].node->ival + 1;
-								strcpy(yyval.node->token, "OP");
-								strcpy(yyval.node->lexeme, "++");
-								strcpy(yyval.node->temp_var, yystack.l_mark[-1].node->temp_var);
-								printf("%s = %s + 1\n", yyval.node->temp_var, yystack.l_mark[-1].node->temp_var);
-							}
-#line 1417 "y.tab.c"
-break;
-case 17:
-#line 149 "prob1.y"
-	{
-								if(yyval.node==NULL){
-									yyval.node = malloc(sizeof(struct I_Node));
-								}
-								if (yyval.node == NULL) {
-									yyerror("no mem");
-								}
-								yyval.node->left = yystack.l_mark[-1].node;
-								yyval.node->right = NULL;
-								yyval.node->ival = yystack.l_mark[-1].node->ival - 1;
-								strcpy(yyval.node->token, "OP");
-								strcpy(yyval.node->lexeme, "--");
-								strcpy(yyval.node->temp_var, yystack.l_mark[-1].node->temp_var);
-								printf("%s = %s - 1\n", yyval.node->temp_var, yystack.l_mark[-1].node->temp_var);
-							}
-#line 1436 "y.tab.c"
-break;
-case 18:
-#line 164 "prob1.y"
-	{
-								if(yyval.node==NULL){
-									yyval.node = malloc(sizeof(struct I_Node));
-								}
-								if (yyval.node == NULL) {
-									yyerror("no mem");
-								}
-								yyval.node->left = NULL;
-								yyval.node->right = yystack.l_mark[0].node;
-								yyval.node->ival = yystack.l_mark[0].node->ival + 1;
-								strcpy(yyval.node->token, "OP");
-								strcpy(yyval.node->lexeme, "++");
-								strcpy(yyval.node->temp_var, yystack.l_mark[0].node->temp_var);
-								printf("%s = %s + 1\n", yyval.node->temp_var, yystack.l_mark[0].node->temp_var);
-							}
-#line 1455 "y.tab.c"
-break;
-case 19:
-#line 179 "prob1.y"
-	{
-								if(yyval.node==NULL){
-									yyval.node = malloc(sizeof(struct I_Node));
-								}
-								if (yyval.node == NULL) {
-									yyerror("no mem");
-								}
-								yyval.node->left = NULL;
-								yyval.node->right = yystack.l_mark[0].node;
-								yyval.node->ival = yystack.l_mark[0].node->ival - 1;
-								strcpy(yyval.node->token, "OP");
-								strcpy(yyval.node->lexeme, "--");
-								strcpy(yyval.node->temp_var, yystack.l_mark[0].node->temp_var);
-								printf("%s = %s - 1\n", yyval.node->temp_var, yystack.l_mark[0].node->temp_var);
-							}
-#line 1474 "y.tab.c"
-break;
-case 20:
-#line 195 "prob1.y"
-	{
-				if(yyval.node==NULL){
-					yyval.node = malloc(sizeof(struct I_Node));
-				}
-				if (yyval.node == NULL) {
-					yyerror("no mem");
-				}
-				strcpy(yyval.node->lexeme, yystack.l_mark[0].lexeme);
-				strcpy(yyval.node->token,"ID");
-				yyval.node->left = NULL;
-				yyval.node->right = NULL;
-				genTemp();
-				strcpy(yyval.node->temp_var, temp_var_g);
-				printf("%s = %s\n", yyval.node->temp_var, yyval.node->lexeme);
-			}
-#line 1493 "y.tab.c"
-break;
-case 21:
-#line 210 "prob1.y"
-	{
-				if(yyval.node==NULL){
-					yyval.node = malloc(sizeof(struct I_Node));
-				}
-				if (yyval.node == NULL) {
-					yyerror("no mem");
-				}
-				yyval.node = yystack.l_mark[-1].node;
-			}
-#line 1506 "y.tab.c"
-break;
-case 22:
-#line 220 "prob1.y"
-	{
-							if(yyval.node==NULL){
-								yyval.node = malloc(sizeof(struct I_Node));
-							}
-							if (yyval.node == NULL) {
-								yyerror("no mem");
-							}
-							yyval.node = yystack.l_mark[0].node;
-						}
-#line 1519 "y.tab.c"
-break;
-case 23:
-#line 229 "prob1.y"
-	{
-							if(yyval.node==NULL){
-								yyval.node = malloc(sizeof(struct I_Node));
-							}
-							if (yyval.node == NULL) {
-								yyerror("no mem");
-							}
-							yyval.node->left = yystack.l_mark[-2].node;
-							yyval.node->right = yystack.l_mark[0].node;
-							yyval.node->ival = yystack.l_mark[-2].node->ival < yystack.l_mark[0].node->ival;
-							strcpy(yyval.node->token, "OP");
-							strcpy(yyval.node->lexeme, "<");
-							genTemp();
-							strcpy(yyval.node->temp_var, temp_var_g);
-							printf("%s = %s < %s\n", yyval.node->temp_var, yystack.l_mark[-2].node->temp_var, yystack.l_mark[0].node->temp_var);
-						}
-#line 1539 "y.tab.c"
-break;
-case 24:
-#line 245 "prob1.y"
-	{
-							if(yyval.node==NULL){
-								yyval.node = malloc(sizeof(struct I_Node));
-							}
-							if (yyval.node == NULL) {
-								yyerror("no mem");
-							}
-							yyval.node->left = yystack.l_mark[-2].node;
-							yyval.node->right = yystack.l_mark[0].node;
-							yyval.node->ival = yystack.l_mark[-2].node->ival > yystack.l_mark[0].node->ival;
-							strcpy(yyval.node->token, "OP");
-							strcpy(yyval.node->lexeme, ">");
-							genTemp();
-							strcpy(yyval.node->temp_var, temp_var_g);
-							printf("%s = %s > %s\n", yyval.node->temp_var, yystack.l_mark[-2].node->temp_var, yystack.l_mark[0].node->temp_var);
-						}
-#line 1559 "y.tab.c"
-break;
-case 25:
-#line 261 "prob1.y"
-	{
-							if(yyval.node==NULL){
-								yyval.node = malloc(sizeof(struct I_Node));
-							}
-							if (yyval.node == NULL) {
-								yyerror("no mem");
-							}
-							yyval.node->left = yystack.l_mark[-2].node;
-							yyval.node->right = yystack.l_mark[0].node;
-							yyval.node->ival = yystack.l_mark[-2].node->ival <= yystack.l_mark[0].node->ival;
-							strcpy(yyval.node->token, "OP");
-							strcpy(yyval.node->lexeme, "<=");
-							genTemp();
-							strcpy(yyval.node->temp_var, temp_var_g);
-							printf("%s = %s <= %s\n", yyval.node->temp_var, yystack.l_mark[-2].node->temp_var, yystack.l_mark[0].node->temp_var);
-						}
-#line 1579 "y.tab.c"
-break;
-case 26:
-#line 277 "prob1.y"
-	{
-							if(yyval.node==NULL){
-								yyval.node = malloc(sizeof(struct I_Node));
-							}
-							if (yyval.node == NULL) {
-								yyerror("no mem");
-							}
-							yyval.node->left = yystack.l_mark[-2].node;
-							yyval.node->right = yystack.l_mark[0].node;
-							yyval.node->ival = yystack.l_mark[-2].node->ival >= yystack.l_mark[0].node->ival;
-							strcpy(yyval.node->token, "OP");
-							strcpy(yyval.node->lexeme, ">=");
-							genTemp();
-							strcpy(yyval.node->temp_var, temp_var_g);
-							printf("%s = %s >= %s\n", yyval.node->temp_var, yystack.l_mark[-2].node->temp_var, yystack.l_mark[0].node->temp_var);
-						}
-#line 1599 "y.tab.c"
-break;
-case 27:
-#line 293 "prob1.y"
-	{
-							if(yyval.node==NULL){
-								yyval.node = malloc(sizeof(struct I_Node));
-							}
-							if (yyval.node == NULL) {
-								yyerror("no mem");
-							}
-							yyval.node->left = yystack.l_mark[-2].node;
-							yyval.node->right = yystack.l_mark[0].node;
-							yyval.node->ival = yystack.l_mark[-2].node->ival == yystack.l_mark[0].node->ival;
-							strcpy(yyval.node->token, "OP");
-							strcpy(yyval.node->lexeme, "==");
-							genTemp();
-							strcpy(yyval.node->temp_var, temp_var_g);
-							printf("%s = %s == %s\n", yyval.node->temp_var, yystack.l_mark[-2].node->temp_var, yystack.l_mark[0].node->temp_var);
-						}
-#line 1619 "y.tab.c"
+#line 72 "prob1.y"
+	{printf("\n");}
+#line 1282 "y.tab.c"
 break;
 case 28:
-#line 309 "prob1.y"
+#line 90 "prob1.y"
 	{
-							if(yyval.node==NULL){
-								yyval.node = malloc(sizeof(struct I_Node));
-							}
-							if (yyval.node == NULL) {
-								yyerror("no mem");
-							}
-							yyval.node->left = yystack.l_mark[-2].node;
-							yyval.node->right = yystack.l_mark[0].node;
-							yyval.node->ival = yystack.l_mark[-2].node->ival != yystack.l_mark[0].node->ival;
-							strcpy(yyval.node->token, "OP");
-							strcpy(yyval.node->lexeme, "!=");
-							genTemp();
-							strcpy(yyval.node->temp_var, temp_var_g);
-							printf("%s = %s != %s\n", yyval.node->temp_var, yystack.l_mark[-2].node->temp_var, yystack.l_mark[0].node->temp_var);
-						}
-#line 1639 "y.tab.c"
+						yyval.node = yystack.l_mark[0].node;
+					}
+#line 1289 "y.tab.c"
 break;
 case 29:
-#line 325 "prob1.y"
+#line 93 "prob1.y"
 	{
-							if(yyval.node==NULL){
-								yyval.node = malloc(sizeof(struct I_Node));
-							}
-							if (yyval.node == NULL) {
-								yyerror("no mem");
-							}
-							yyval.node->ival = yystack.l_mark[-2].node->ival && yystack.l_mark[0].node->ival;
-							yyval.node->left = yystack.l_mark[-2].node;
-							yyval.node->right = yystack.l_mark[0].node;
-							strcpy(yyval.node->token, "OP");
-							strcpy(yyval.node->lexeme, "&&");
-							genTemp();
-							strcpy(yyval.node->temp_var, temp_var_g);
-							printf("%s = %s && %s\n", yyval.node->temp_var, yystack.l_mark[-2].node->temp_var, yystack.l_mark[0].node->temp_var);
-						}
-#line 1659 "y.tab.c"
-break;
-case 30:
-#line 341 "prob1.y"
-	{
-							if(yyval.node==NULL){
-								yyval.node = malloc(sizeof(struct I_Node));
-							}
-							if (yyval.node == NULL) {
-								yyerror("no mem");
-							}
-							yyval.node->ival = yystack.l_mark[-2].node->ival || yystack.l_mark[0].node->ival;
-							yyval.node->left = yystack.l_mark[-2].node;
-							yyval.node->right = yystack.l_mark[0].node;
-							strcpy(yyval.node->token, "OP");
-							strcpy(yyval.node->lexeme, "||");
-							genTemp();
-							strcpy(yyval.node->temp_var, temp_var_g);
-							printf("%s = %s || %s\n", yyval.node->temp_var, yystack.l_mark[-2].node->temp_var, yystack.l_mark[0].node->temp_var);
 
-						}
-#line 1680 "y.tab.c"
-break;
-case 31:
-#line 358 "prob1.y"
-	{
-							if(yyval.node==NULL){
-								yyval.node = malloc(sizeof(struct I_Node));
-							}
-							if (yyval.node == NULL) {
-								yyerror("no mem");
-							}
-							yyval.node->ival = !yystack.l_mark[0].node->ival;
-							yyval.node->left = NULL;
-							yyval.node->right = yystack.l_mark[0].node;
-							strcpy(yyval.node->token, "OP");
-							strcpy(yyval.node->lexeme, "!");
-							genTemp();
-							strcpy(yyval.node->temp_var, temp_var_g);
-							printf("%s = !%s\n", yyval.node->temp_var, yystack.l_mark[0].node->temp_var);
-						}
-#line 1700 "y.tab.c"
-break;
-case 32:
-#line 375 "prob1.y"
-	{
-							if(yyval.node==NULL){
-								yyval.node = malloc(sizeof(struct I_Node));
-							}
-							if (yyval.node == NULL) {
-								yyerror("no mem");
-							}
-							yyval.node = yystack.l_mark[0].node;
-						}
-#line 1713 "y.tab.c"
-break;
-case 33:
-#line 384 "prob1.y"
-	{
-							if(yyval.node==NULL){
-								yyval.node = malloc(sizeof(struct I_Node));
-							}
-							if (yyval.node == NULL) {
-								yyerror("no mem");
-							}
-							yyval.node->left = yystack.l_mark[-2].node;
-							yyval.node->right = yystack.l_mark[0].node;
-							yyval.node->ival = yystack.l_mark[-2].node->ival + yystack.l_mark[0].node->ival;
-							strcpy(yyval.node->token, "OP");
-							strcpy(yyval.node->lexeme, "+");
-							genTemp();
-							strcpy(yyval.node->temp_var, temp_var_g);
-							printf("%s = %s + %s\n", yyval.node->temp_var, yystack.l_mark[-2].node->temp_var, yystack.l_mark[0].node->temp_var);
-						}
-#line 1733 "y.tab.c"
+					}
+#line 1296 "y.tab.c"
 break;
 case 34:
-#line 400 "prob1.y"
+#line 97 "prob1.y"
 	{
-							if(yyval.node==NULL){
-								yyval.node = malloc(sizeof(struct I_Node));
-							}
-							if (yyval.node == NULL) {
-								yyerror("no mem");
-							}
-							yyval.node->left = yystack.l_mark[-2].node;
-							yyval.node->right = yystack.l_mark[0].node;
-							yyval.node->ival = yystack.l_mark[-2].node->ival - yystack.l_mark[0].node->ival;
-							strcpy(yyval.node->token, "OP");
-							strcpy(yyval.node->lexeme, "-");
-							genTemp();
-							strcpy(yyval.node->temp_var, temp_var_g);
-							printf("%s = %s - %s\n", yyval.node->temp_var, yystack.l_mark[-2].node->temp_var, yystack.l_mark[0].node->temp_var);
-						}
-#line 1753 "y.tab.c"
+						yyval.node = yystack.l_mark[0].node;
+					}
+#line 1303 "y.tab.c"
 break;
 case 35:
-#line 417 "prob1.y"
+#line 100 "prob1.y"
 	{
-								if(yyval.node==NULL){
-									yyval.node = malloc(sizeof(struct I_Node));
-								}
-								if (yyval.node == NULL) {
-									yyerror("no mem");
-								}
-								yyval.node = yystack.l_mark[0].node;
-							}
-#line 1766 "y.tab.c"
-break;
-case 36:
-#line 426 "prob1.y"
-	{
-								if(yyval.node==NULL){
-									yyval.node = malloc(sizeof(struct I_Node));
-								}
-								if (yyval.node == NULL) {
-									yyerror("no mem");
-								}
-								yyval.node->left = yystack.l_mark[-2].node;
-								yyval.node->right = yystack.l_mark[0].node;
-								yyval.node->ival = yystack.l_mark[-2].node->ival * yystack.l_mark[0].node->ival;
-								strcpy(yyval.node->token, "OP");
-								strcpy(yyval.node->lexeme, "*");
-								genTemp();
-								strcpy(yyval.node->temp_var, temp_var_g);
-								printf("%s = %s * %s\n", yyval.node->temp_var, yystack.l_mark[-2].node->temp_var, yystack.l_mark[0].node->temp_var);
-							}
-#line 1786 "y.tab.c"
-break;
-case 37:
-#line 442 "prob1.y"
-	{
-								if(yyval.node==NULL){
-									yyval.node = malloc(sizeof(struct I_Node));
-								}
-								if (yyval.node == NULL) {
-									yyerror("no mem");
-								}
-								yyval.node->left = yystack.l_mark[-2].node;
-								yyval.node->right = yystack.l_mark[0].node;
-								yyval.node->ival = yystack.l_mark[-2].node->ival / yystack.l_mark[0].node->ival;
-								strcpy(yyval.node->token, "OP");
-								strcpy(yyval.node->lexeme, "/");
-								genTemp();
-								strcpy(yyval.node->temp_var, temp_var_g);
-								printf("%s = %s / %s\n", yyval.node->temp_var, yystack.l_mark[-2].node->temp_var, yystack.l_mark[0].node->temp_var);
-							}
-#line 1806 "y.tab.c"
-break;
-case 38:
-#line 459 "prob1.y"
-	{
-						if(yyval.node==NULL){
-							yyval.node = malloc(sizeof(struct I_Node));
-						}
+						yyval.node = malloc(sizeof(struct ASTNode));
 						if (yyval.node == NULL) {
 							yyerror("no mem");
 						}
-						yyval.node = yystack.l_mark[0].node;
-					}
-#line 1819 "y.tab.c"
-break;
-case 39:
-#line 468 "prob1.y"
-	{
-						if(yyval.node==NULL){
-							yyval.node = malloc(sizeof(struct I_Node));
-						}
-						if (yyval.node == NULL) {
-							yyerror("no mem");
-						}
-						yyval.node->left = NULL;
-						yyval.node->right = yystack.l_mark[0].node;
-						yyval.node->ival = yystack.l_mark[0].node->ival + 1;
-						strcpy(yyval.node->token, "OP");
-						strcpy(yyval.node->lexeme, "++");
-						strcpy(yyval.node->temp_var, yystack.l_mark[0].node->temp_var);
-						printf("%s = %s + 1\n", yyval.node->temp_var, yystack.l_mark[0].node->temp_var);
-					}
-#line 1838 "y.tab.c"
-break;
-case 40:
-#line 483 "prob1.y"
-	{
-						if(yyval.node==NULL){
-							yyval.node = malloc(sizeof(struct I_Node));
-						}
-						if (yyval.node == NULL) {
-							yyerror("no mem");
-						}
-						yyval.node->left = NULL;
-						yyval.node->right = yystack.l_mark[0].node;
-						yyval.node->ival = yystack.l_mark[0].node->ival - 1;
-						strcpy(yyval.node->token, "OP");
-						strcpy(yyval.node->lexeme, "--");
-						strcpy(yyval.node->temp_var, yystack.l_mark[0].node->temp_var);
-						printf("%s = %s - 1\n", yyval.node->temp_var, yystack.l_mark[0].node->temp_var);
-					}
-#line 1857 "y.tab.c"
-break;
-case 41:
-#line 498 "prob1.y"
-	{
-						if(yyval.node==NULL){
-							yyval.node = malloc(sizeof(struct I_Node));
-						}
-						if (yyval.node == NULL) {
-							yyerror("no mem");
-						}
-						yyval.node = yystack.l_mark[0].node;
-					}
-#line 1870 "y.tab.c"
-break;
-case 42:
-#line 507 "prob1.y"
-	{
-						if(yyval.node==NULL){
-							yyval.node = malloc(sizeof(struct I_Node));
-						}
-						if (yyval.node == NULL) {
-							yyerror("no mem");
-						}
-						yyval.node->left = yystack.l_mark[0].node;
-						yyval.node->right = NULL;
-						yyval.node->ival = -1 * yystack.l_mark[0].node->ival;
-						strcpy(yyval.node->token, "OP");
-						strcpy(yyval.node->lexeme, "negative");
+						yyval.node->token = NODETYPE_OPERATOR;
+						yyval.node->info.opInfo.left = yystack.l_mark[-1].node;
+						yyval.node->info.intValue = yystack.l_mark[-1].node->info.intValue;
+						strcpy(yyval.node->info.opInfo.op, "++");
 						genTemp();
 						strcpy(yyval.node->temp_var, temp_var_g);
-						printf("%s = -1 * %s\n", yyval.node->temp_var, yystack.l_mark[0].node->temp_var);
+						printf("\n%s = %s", yyval.node->temp_var, yyval.node->info.opInfo.left->temp_var);
+						yystack.l_mark[-1].node->info.intValue = yystack.l_mark[-1].node->info.intValue + 1;
+						printf("\n%s = %s + 1", yystack.l_mark[-1].node->temp_var, yystack.l_mark[-1].node->temp_var);
 					}
-#line 1890 "y.tab.c"
+#line 1322 "y.tab.c"
 break;
-case 43:
-#line 524 "prob1.y"
+case 36:
+#line 115 "prob1.y"
 	{
-							if(yyval.node==NULL){
-								yyval.node = malloc(sizeof(struct I_Node));
-							}
-							if (yyval.node == NULL) {
-								yyerror("no mem");
-							}
-							yyval.node = yystack.l_mark[0].node;
+						yyval.node = malloc(sizeof(struct ASTNode));
+						if (yyval.node == NULL) {
+							yyerror("no mem");
 						}
-#line 1903 "y.tab.c"
-break;
-case 44:
-#line 533 "prob1.y"
-	{
-							if(yyval.node==NULL){
-								yyval.node = malloc(sizeof(struct I_Node));
-							}
-							if (yyval.node == NULL) {
-								yyerror("no mem");
-							}
-							yyval.node->left = yystack.l_mark[-1].node;
-							yyval.node->right = NULL;
-							yyval.node->ival = yystack.l_mark[-1].node->ival + 1;
-							strcpy(yyval.node->token, "OP");
-							strcpy(yyval.node->lexeme, "++");
-							strcpy(yyval.node->temp_var, yystack.l_mark[-1].node->temp_var);
-							printf("%s = %s + 1\n", yyval.node->temp_var, yystack.l_mark[-1].node->temp_var);
-						}
-#line 1922 "y.tab.c"
-break;
-case 45:
-#line 548 "prob1.y"
-	{
-							if(yyval.node==NULL){
-								yyval.node = malloc(sizeof(struct I_Node));
-							}
-							if (yyval.node == NULL) {
-								yyerror("no mem");
-							}
-							yyval.node->left = yystack.l_mark[-1].node;
-							yyval.node->right = NULL;
-							yyval.node->ival = yystack.l_mark[-1].node->ival - 1;
-							strcpy(yyval.node->token, "OP");
-							strcpy(yyval.node->lexeme, "--");
-							strcpy(yyval.node->temp_var, yystack.l_mark[-1].node->temp_var);
-							printf("%s = %s - 1\n", yyval.node->temp_var, yystack.l_mark[-1].node->temp_var);
-						}
-#line 1941 "y.tab.c"
-break;
-case 46:
-#line 564 "prob1.y"
-	{
-							if(yyval.node==NULL){
-								yyval.node = malloc(sizeof(struct I_Node));
-							}
-							if (yyval.node == NULL) {
-								yyerror("no mem");
-							}
-							yyval.node = yystack.l_mark[0].node;
-						}
-#line 1954 "y.tab.c"
-break;
-case 47:
-#line 573 "prob1.y"
-	{
-							if(yyval.node==NULL){
-								yyval.node = malloc(sizeof(struct I_Node));
-							}
-							if (yyval.node == NULL) {
-								yyerror("no mem");
-							}
-							strcpy(yyval.node->lexeme, yystack.l_mark[0].lexeme);
-							yyval.node->left = NULL;
-							yyval.node->right = NULL;
-							strcpy(yyval.node->token, "ID");
-							genTemp();
-							strcpy(yyval.node->temp_var, temp_var_g);
-							printf("%s = %s\n", yyval.node->temp_var, yyval.node->lexeme);
+						yyval.node->token = NODETYPE_OPERATOR;
+						yyval.node->info.opInfo.left = yystack.l_mark[-1].node;
+						strcpy(yyval.node->info.opInfo.op, "--");
+						yyval.node->info.intValue = yystack.l_mark[-1].node->info.intValue;
+						genTemp();
+						strcpy(yyval.node->temp_var, temp_var_g);
+						printf("\n%s = %s", yyval.node->temp_var, yyval.node->info.opInfo.left->temp_var);
+						yystack.l_mark[-1].node->info.intValue = yystack.l_mark[-1].node->info.intValue - 1;
+						printf("\n%s = %s - 1", yystack.l_mark[-1].node->temp_var, yystack.l_mark[-1].node->temp_var);
 					}
-#line 1973 "y.tab.c"
+#line 1341 "y.tab.c"
 break;
-case 48:
-#line 588 "prob1.y"
+case 37:
+#line 131 "prob1.y"
 	{
-							if(yyval.node==NULL){
-								yyval.node = malloc(sizeof(struct I_Node));
-							}
-							if (yyval.node == NULL) {
-								yyerror("no mem");
-							}
-							yyval.node = yystack.l_mark[-1].node;
+						yyval.node = malloc(sizeof(ASTNode));
+						if(yyval.node == NULL){
+							printf("Out of memory\n");
+							exit(0);
+						}
+						yyval.node->token = NODETYPE_CONSTANT_INT;
+						yyval.node->info.intValue = yystack.l_mark[0].intValue;
+						genTemp();
+						strcpy(yyval.node->temp_var, temp_var_g);
+						printf("\n%s = %d", yyval.node->temp_var, yyval.node->info.intValue);
 					}
-#line 1986 "y.tab.c"
+#line 1357 "y.tab.c"
 break;
-case 49:
-#line 598 "prob1.y"
+case 38:
+#line 143 "prob1.y"
 	{
-				if(yyval.node==NULL){
-					yyval.node = malloc(sizeof(struct I_Node));
-				}
-				if (yyval.node == NULL) {
-					yyerror("no mem");
-				}
-				yyval.node->ival = yystack.l_mark[0].ival;
-				yyval.node->left = NULL;
-				yyval.node->right = NULL;
-				strcpy(yyval.node->token, "CONST");
-				strcpy(yyval.node->lexeme, "INT");
-				genTemp();
-				strcpy(yyval.node->temp_var, temp_var_g);
-				printf("%s = %i\n", yyval.node->temp_var, yyval.node->ival);
-			}
-#line 2006 "y.tab.c"
+						yyval.node = malloc(sizeof(ASTNode));
+						if(yyval.node == NULL){
+							printf("Out of memory\n");
+							exit(0);
+						}
+						yyval.node->token = NODETYPE_IDENTIFIER;
+						strcpy(yyval.node->info.lexeme, yystack.l_mark[0].lexeme);
+						genTemp();
+						strcpy(yyval.node->temp_var, temp_var_g);
+						printf("\n%s = %s", yyval.node->temp_var, yyval.node->info.lexeme);
+					}
+#line 1373 "y.tab.c"
 break;
-#line 2008 "y.tab.c"
+case 39:
+#line 155 "prob1.y"
+	{
+						yyval.node = yystack.l_mark[-1].node;
+					}
+#line 1380 "y.tab.c"
+break;
+#line 1382 "y.tab.c"
     default:
         break;
     }

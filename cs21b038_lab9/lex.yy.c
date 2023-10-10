@@ -362,10 +362,10 @@ struct yy_trans_info
 	};
 static const flex_int16_t yy_accept[49] =
     {   0,
-        0,    0,   32,   30,   29,   29,   26,   30,    5,    6,
-        3,    1,    2,    4,   28,   14,   18,   11,   19,   27,
-        9,   10,   27,   27,   27,    7,   30,    8,   29,   23,
-       24,   13,   12,   28,   20,   22,   21,   27,   27,   15,
+        0,    0,   32,   30,   29,   29,   26,   30,    8,    9,
+        3,    1,    2,    4,   28,   14,   18,    7,   19,   27,
+       12,   13,   27,   27,   27,   10,   30,   11,   29,   23,
+       24,    6,    5,   28,   20,   22,   21,   27,   27,   15,
        27,   25,   27,   27,   16,   27,   17,    0
     } ;
 
@@ -772,47 +772,47 @@ YY_RULE_SETUP
 case 5:
 YY_RULE_SETUP
 #line 13 "prob1.l"
-{ return LPAREN; }
+{ return DEC; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
 #line 14 "prob1.l"
-{ return RPAREN; }
+{ return INC; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
 #line 15 "prob1.l"
-{ return LBRACE; }
+{ return ASSIGN; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
 #line 16 "prob1.l"
-{ return RBRACE; }
+{ return LPAREN; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
 #line 17 "prob1.l"
-{ return LBRACKET; }
+{ return RPAREN; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
 #line 18 "prob1.l"
-{ return RBRACKET; }
+{ return LBRACE; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
 #line 19 "prob1.l"
-{ return ASSIGN; }
+{ return RBRACE; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
 #line 20 "prob1.l"
-{ return DEC; }
+{ return LBRACKET; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
 #line 21 "prob1.l"
-{ return INC; }
+{ return RBRACKET; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
@@ -887,7 +887,7 @@ YY_RULE_SETUP
 case 28:
 YY_RULE_SETUP
 #line 36 "prob1.l"
-{ yylval.ival = atoi(yytext) ;return INTEGER; }
+{ yylval.intValue = atoi(yytext) ;return INTEGER; }
 	YY_BREAK
 case 29:
 /* rule 29 can match eol */
