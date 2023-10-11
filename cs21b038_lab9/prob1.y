@@ -19,9 +19,11 @@ typedef struct ASTNode {
         NODETYPE_WHILE
     } token;
 
+    int intValue;
+    char lexeme[20];
+	char temp_var[20];
+
     union {
-        int intValue;
-        char lexeme[20];
         struct {
             char op[20];
             struct ASTNode* left;
@@ -39,14 +41,7 @@ typedef struct ASTNode {
         } flowControlInfo;
     } info;
 
-	char temp_var[20];
 } ASTNode;
-
-/* slist : assignmentExpression SEMICOLON {printf("\nAccepted assignment Expression");} slist
-		| selectionStatement {printf("\nAccepted selection statement");} slist
-		| iterationStatement {printf("\nAccepted iteration statement");} slist
-		|error SEMICOLON {printf("\nRejected");} slist
-		| {printf("\n");}; */
 
 %}
 
@@ -71,23 +66,229 @@ slist : slist assignmentExpression SEMICOLON {printf("\nAccepted assignment Expr
 		| slist error {printf("\nRejected");}
 		| {printf("\n");};
 
-assignmentExpression : conditionalExpression | unaryExpression ASSIGN assignmentExpression;
+assignmentExpression :	conditionalExpression { $$ = $1; }
+						| unaryExpression ASSIGN assignmentExpression {
+							$$ = malloc(sizeof(struct ASTNode));
+							if($$ == NULL){
+								printf("Out of memory\n");
+								exit(0);
+							}
+							$$->token = NODETYPE_OPERATOR;
+							$$->info.opInfo.left = $1;
+							$$->info.opInfo.right = $3;
+							strcpy($$->info.opInfo.op, "=");
+							genTemp();
+							strcpy($$->temp_var, temp_var_g);
+							$$->intValue = $3->intValue;
+							printf("\n%s = %s", $$->temp_var, $$->info.opInfo.right->temp_var);
+						};
 
-conditionalExpression : logicalOrExpression;
+conditionalExpression : logicalOrExpression { $$ = $1; };
 
-logicalOrExpression : logicalAndExpression | logicalOrExpression OR logicalAndExpression;
+logicalOrExpression :	logicalAndExpression {
+							$$ = $1;
+						}
+						| logicalOrExpression OR logicalAndExpression {
+							$$ = malloc(sizeof(struct ASTNode));
+							if($$ == NULL){
+								printf("Out of memory\n");
+								exit(0);
+							}
+							$$->token = NODETYPE_OPERATOR;
+							$$->info.opInfo.left = $1;
+							$$->info.opInfo.right = $3;
+							strcpy($$->info.opInfo.op, "||");
+							genTemp();
+							strcpy($$->temp_var, temp_var_g);
+							$$->intValue = $1->intValue || $3->intValue;
+							printf("\n%s = %s || %s", $$->temp_var, $$->info.opInfo.left->temp_var, $$->info.opInfo.right->temp_var);
+						};
 
-logicalAndExpression : equalityExpression | logicalAndExpression AND equalityExpression;
+logicalAndExpression :	equalityExpression {
+							$$ = $1;
+						}
+						| logicalAndExpression AND equalityExpression {
+							$$ = malloc(sizeof(struct ASTNode));
+							if($$ == NULL){
+								printf("Out of memory\n");
+								exit(0);
+							}
+							$$->token = NODETYPE_OPERATOR;
+							$$->info.opInfo.left = $1;
+							$$->info.opInfo.right = $3;
+							strcpy($$->info.opInfo.op, "&&");
+							genTemp();
+							strcpy($$->temp_var, temp_var_g);
+							$$->intValue = $1->intValue && $3->intValue;
+							printf("\n%s = %s && %s", $$->temp_var, $$->info.opInfo.left->temp_var, $$->info.opInfo.right->temp_var);
+						};
 
-equalityExpression : relationalExpression | equalityExpression EQ relationalExpression | equalityExpression NEQ relationalExpression;
+equalityExpression :	relationalExpression {
+							$$ = $1;
+						}
+						| equalityExpression EQ relationalExpression {
+							$$ = malloc(sizeof(struct ASTNode));
+							if($$ == NULL){
+								printf("Out of memory\n");
+								exit(0);
+							}
+							$$->token = NODETYPE_OPERATOR;
+							$$->info.opInfo.left = $1;
+							$$->info.opInfo.right = $3;
+							strcpy($$->info.opInfo.op, "==");
+							genTemp();
+							strcpy($$->temp_var, temp_var_g);
+							$$->intValue = $1->intValue == $3->intValue;
+							printf("\n%s = %s == %s", $$->temp_var, $$->info.opInfo.left->temp_var, $$->info.opInfo.right->temp_var);
+						}
+						| equalityExpression NEQ relationalExpression {
+							$$ = malloc(sizeof(struct ASTNode));
+							if($$ == NULL){
+								printf("Out of memory\n");
+								exit(0);
+							}
+							$$->token = NODETYPE_OPERATOR;
+							$$->info.opInfo.left = $1;
+							$$->info.opInfo.right = $3;
+							strcpy($$->info.opInfo.op, "!=");
+							genTemp();
+							strcpy($$->temp_var, temp_var_g);
+							$$->intValue = $1->intValue != $3->intValue;
+							printf("\n%s = %s != %s", $$->temp_var, $$->info.opInfo.left->temp_var, $$->info.opInfo.right->temp_var);
+						};
 
-relationalExpression : additiveExpression | relationalExpression LT additiveExpression | relationalExpression GT additiveExpression | relationalExpression LEQ additiveExpression | relationalExpression GEQ additiveExpression;
+relationalExpression :	additiveExpression {
+							$$ = $1;
+						}
+						| relationalExpression LT additiveExpression {
+							$$ = malloc(sizeof(struct ASTNode));
+							if($$ == NULL){
+								printf("Out of memory\n");
+								exit(0);
+							}
+							$$->token = NODETYPE_OPERATOR;
+							$$->info.opInfo.left = $1;
+							$$->info.opInfo.right = $3;
+							strcpy($$->info.opInfo.op, "<");
+							genTemp();
+							strcpy($$->temp_var, temp_var_g);
+							$$->intValue = $1->intValue < $3->intValue;
+							printf("\n%s = %s < %s", $$->temp_var, $$->info.opInfo.left->temp_var, $$->info.opInfo.right->temp_var);
+						}
+						| relationalExpression GT additiveExpression {
+							$$ = malloc(sizeof(struct ASTNode));
+							if($$ == NULL){
+								printf("Out of memory\n");
+								exit(0);
+							}
+							$$->token = NODETYPE_OPERATOR;
+							$$->info.opInfo.left = $1;
+							$$->info.opInfo.right = $3;
+							strcpy($$->info.opInfo.op, ">");
+							genTemp();
+							strcpy($$->temp_var, temp_var_g);
+							$$->intValue = $1->intValue > $3->intValue;
+							printf("\n%s = %s > %s", $$->temp_var, $$->info.opInfo.left->temp_var, $$->info.opInfo.right->temp_var);
+						}
+						| relationalExpression LEQ additiveExpression {
+							$$ = malloc(sizeof(struct ASTNode));
+							if($$ == NULL){
+								printf("Out of memory\n");
+								exit(0);
+							}
+							$$->token = NODETYPE_OPERATOR;
+							$$->info.opInfo.left = $1;
+							$$->info.opInfo.right = $3;
+							strcpy($$->info.opInfo.op, "<=");
+							genTemp();
+							strcpy($$->temp_var, temp_var_g);
+							$$->intValue = $1->intValue <= $3->intValue;
+							printf("\n%s = %s <= %s", $$->temp_var, $$->info.opInfo.left->temp_var, $$->info.opInfo.right->temp_var);
+						}
+						| relationalExpression GEQ additiveExpression {
+							$$ = malloc(sizeof(struct ASTNode));
+							if($$ == NULL){
+								printf("Out of memory\n");
+								exit(0);
+							}
+							$$->token = NODETYPE_OPERATOR;
+							$$->info.opInfo.left = $1;
+							$$->info.opInfo.right = $3;
+							strcpy($$->info.opInfo.op, ">=");
+							genTemp();
+							strcpy($$->temp_var, temp_var_g);
+							$$->intValue = $1->intValue >= $3->intValue;
+							printf("\n%s = %s >= %s", $$->temp_var, $$->info.opInfo.left->temp_var, $$->info.opInfo.right->temp_var);
+						};
 
-additiveExpression : multiplicativeExpression | additiveExpression ADD multiplicativeExpression | additiveExpression SUB multiplicativeExpression;
+additiveExpression : multiplicativeExpression {
+						$$ = $1;
+					}
+					| additiveExpression ADD multiplicativeExpression {
+						$$ = malloc(sizeof(struct ASTNode));
+						if($$ == NULL){
+							printf("Out of memory\n");
+							exit(0);
+						}
+
+						$$->token = NODETYPE_OPERATOR;
+						$$->info.opInfo.left = $1;
+						$$->info.opInfo.right = $3;
+						strcpy($$->info.opInfo.op, "+");
+						genTemp();
+						strcpy($$->temp_var, temp_var_g);
+						$$->intValue = $1->intValue + $3->intValue;
+						printf("\n%s = %s + %s", $$->temp_var, $$->info.opInfo.left->temp_var, $$->info.opInfo.right->temp_var);
+					}
+					| additiveExpression SUB multiplicativeExpression {
+						$$ = malloc(sizeof(struct ASTNode));
+						if($$ == NULL){
+							printf("Out of memory\n");
+							exit(0);
+						}
+						$$->token = NODETYPE_OPERATOR;
+						$$->info.opInfo.left = $1;
+						$$->info.opInfo.right = $3;
+						strcpy($$->info.opInfo.op, "-");
+						genTemp();
+						strcpy($$->temp_var, temp_var_g);
+						$$->intValue = $1->intValue - $3->intValue;
+						printf("\n%s = %s - %s", $$->temp_var, $$->info.opInfo.left->temp_var, $$->info.opInfo.right->temp_var);
+					};
 
 multiplicativeExpression :	unaryExpression {
 								$$ = $1;
-							} | multiplicativeExpression MUL unaryExpression | multiplicativeExpression DIV unaryExpression;
+							}
+							| multiplicativeExpression MUL unaryExpression {
+								$$ = malloc(sizeof(struct ASTNode));
+								if($$ == NULL){
+									printf("Out of memory\n");
+									exit(0);
+								}
+								$$->token = NODETYPE_OPERATOR;
+								$$->info.opInfo.left = $1;
+								$$->info.opInfo.right = $3;
+								strcpy($$->info.opInfo.op, "*");
+								genTemp();
+								strcpy($$->temp_var, temp_var_g);
+								$$->intValue = $1->intValue * $3->intValue;
+								printf("\n%s = %s * %s", $$->temp_var, $$->info.opInfo.left->temp_var, $$->info.opInfo.right->temp_var);
+							}
+							| multiplicativeExpression DIV unaryExpression {
+								$$ = malloc(sizeof(struct ASTNode));
+								if($$ == NULL){
+									printf("Out of memory\n");
+									exit(0);
+								}
+								$$->token = NODETYPE_OPERATOR;
+								$$->info.opInfo.left = $1;
+								$$->info.opInfo.right = $3;
+								strcpy($$->info.opInfo.op, "/");
+								genTemp();
+								strcpy($$->temp_var, temp_var_g);
+								$$->intValue = $1->intValue / $3->intValue;
+								printf("\n%s = %s / %s", $$->temp_var, $$->info.opInfo.left->temp_var, $$->info.opInfo.right->temp_var);
+							};
 
 unaryExpression :	postfixExpression {
 						$$ = $1;
@@ -103,9 +304,9 @@ unaryExpression :	postfixExpression {
 						strcpy($$->info.opInfo.op, "++");
 						genTemp();
 						strcpy($$->temp_var, temp_var_g);
-						$2->info.intValue = $2->info.intValue + 1;
+						$2->intValue = $2->intValue + 1;
 						printf("\n%s = %s + 1", $2->temp_var, $2->temp_var);
-						$$->info.intValue = $2->info.intValue;
+						$$->intValue = $2->intValue;
 						printf("\n%s = %s", $$->temp_var, $$->info.opInfo.right->temp_var);
 					}
 					| DEC unaryExpression {
@@ -119,9 +320,9 @@ unaryExpression :	postfixExpression {
 						strcpy($$->info.opInfo.op, "--");
 						genTemp();
 						strcpy($$->temp_var, temp_var_g);
-						$2->info.intValue = $2->info.intValue - 1;
+						$2->intValue = $2->intValue - 1;
 						printf("\n%s = %s - 1", $2->temp_var, $2->temp_var);
-						$$->info.intValue = $2->info.intValue;
+						$$->intValue = $2->intValue;
 						printf("\n%s = %s", $$->temp_var, $$->info.opInfo.right->temp_var);
 					}
 					| ADD unaryExpression {
@@ -138,7 +339,7 @@ unaryExpression :	postfixExpression {
 						strcpy($$->info.opInfo.op, "minus");
 						genTemp();
 						strcpy($$->temp_var, temp_var_g);
-						$$->info.intValue = -1 * $2->info.intValue;
+						$$->intValue = -1 * $2->intValue;
 						printf("\n%s = -1 * %s", $$->temp_var, $$->info.opInfo.right->temp_var);
 					}
 					| NOT unaryExpression {
@@ -152,7 +353,7 @@ unaryExpression :	postfixExpression {
 						strcpy($$->info.opInfo.op, "!");
 						genTemp();
 						strcpy($$->temp_var, temp_var_g);
-						$$->info.intValue = !$2->info.intValue;
+						$$->intValue = !$2->intValue;
 						printf("\n%s = !%s", $$->temp_var, $$->info.opInfo.right->temp_var);
 					};
 
@@ -166,12 +367,12 @@ postfixExpression : primaryExpression {
 						}
 						$$->token = NODETYPE_OPERATOR;
 						$$->info.opInfo.left = $1;
-						$$->info.intValue = $1->info.intValue;
+						$$->intValue = $1->intValue;
 						strcpy($$->info.opInfo.op, "++");
 						genTemp();
 						strcpy($$->temp_var, temp_var_g);
 						printf("\n%s = %s", $$->temp_var, $$->info.opInfo.left->temp_var);
-						$1->info.intValue = $1->info.intValue + 1;
+						$1->intValue = $1->intValue + 1;
 						printf("\n%s = %s + 1", $1->temp_var, $1->temp_var);
 					}
 					| postfixExpression DEC {
@@ -182,11 +383,11 @@ postfixExpression : primaryExpression {
 						$$->token = NODETYPE_OPERATOR;
 						$$->info.opInfo.left = $1;
 						strcpy($$->info.opInfo.op, "--");
-						$$->info.intValue = $1->info.intValue;
+						$$->intValue = $1->intValue;
 						genTemp();
 						strcpy($$->temp_var, temp_var_g);
 						printf("\n%s = %s", $$->temp_var, $$->info.opInfo.left->temp_var);
-						$1->info.intValue = $1->info.intValue - 1;
+						$1->intValue = $1->intValue - 1;
 						printf("\n%s = %s - 1", $1->temp_var, $1->temp_var);
 					};
 
@@ -197,10 +398,10 @@ primaryExpression : INTEGER {
 							exit(0);
 						}
 						$$->token = NODETYPE_CONSTANT_INT;
-						$$->info.intValue = $1;
+						$$->intValue = $1;
 						genTemp();
 						strcpy($$->temp_var, temp_var_g);
-						printf("\n%s = %d", $$->temp_var, $$->info.intValue);
+						printf("\n%s = %d", $$->temp_var, $$->intValue);
 					} 
 					| IDENTIFIER {
 						$$ = malloc(sizeof(ASTNode));
@@ -209,10 +410,10 @@ primaryExpression : INTEGER {
 							exit(0);
 						}
 						$$->token = NODETYPE_IDENTIFIER;
-						strcpy($$->info.lexeme, $1);
+						strcpy($$->lexeme, $1);
 						genTemp();
 						strcpy($$->temp_var, temp_var_g);
-						printf("\n%s = %s", $$->temp_var, $$->info.lexeme);
+						printf("\n%s = %s", $$->temp_var, $$->lexeme);
 					}
 					| LPAREN assignmentExpression RPAREN {
 						$$ = $2;

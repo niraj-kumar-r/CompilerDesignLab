@@ -41,9 +41,11 @@ typedef struct ASTNode {
         NODETYPE_WHILE
     } token;
 
+    int intValue;
+    char lexeme[20];
+	char temp_var[20];
+
     union {
-        int intValue;
-        char lexeme[20];
         struct {
             char op[20];
             struct ASTNode* left;
@@ -61,7 +63,6 @@ typedef struct ASTNode {
         } flowControlInfo;
     } info;
 
-	char temp_var[20];
 } ASTNode;
 
 /* slist : assignmentExpression SEMICOLON {printf("\nAccepted assignment Expression");} slist
@@ -76,14 +77,14 @@ typedef struct ASTNode {
 #endif
 #ifndef YYSTYPE_IS_DECLARED
 #define YYSTYPE_IS_DECLARED 1
-#line 53 "prob1.y"
+#line 54 "prob1.y"
 typedef union YYSTYPE{
 	int intValue;
 	char lexeme[20];
 	struct ASTNode *node;
 } YYSTYPE;
 #endif /* !YYSTYPE_IS_DECLARED */
-#line 87 "y.tab.c"
+#line 88 "y.tab.c"
 
 /* compatibility with bison */
 #ifdef YYPARSE_PARAM
@@ -549,7 +550,7 @@ static YYINT  *yylexp = 0;
 
 static YYINT  *yylexemes = 0;
 #endif /* YYBTYACC */
-#line 166 "prob1.y"
+#line 435 "prob1.y"
 
 int main(int argc, char* argv[])
 {
@@ -580,7 +581,7 @@ char *genLabel()
 	sprintf(label_g, "L%d", label_count);
 	label_count++;
 }
-#line 584 "y.tab.c"
+#line 585 "y.tab.c"
 
 /* For use in generated program */
 #define yydepth (int)(yystack.s_mark - yystack.s_base)
@@ -1251,58 +1252,434 @@ yyreduce:
     switch (yyn)
     {
 case 1:
-#line 66 "prob1.y"
+#line 67 "prob1.y"
 	{printf("\n\nCompleted\n");}
-#line 1257 "y.tab.c"
+#line 1258 "y.tab.c"
 break;
 case 2:
-#line 68 "prob1.y"
+#line 69 "prob1.y"
 	{printf("\nAccepted assignment Expression");}
-#line 1262 "y.tab.c"
+#line 1263 "y.tab.c"
 break;
 case 3:
-#line 69 "prob1.y"
+#line 70 "prob1.y"
 	{printf("\nAccepted selection statement");}
-#line 1267 "y.tab.c"
+#line 1268 "y.tab.c"
 break;
 case 4:
-#line 70 "prob1.y"
+#line 71 "prob1.y"
 	{printf("\nAccepted iteration statement");}
-#line 1272 "y.tab.c"
+#line 1273 "y.tab.c"
 break;
 case 5:
-#line 71 "prob1.y"
+#line 72 "prob1.y"
 	{printf("\nRejected");}
-#line 1277 "y.tab.c"
+#line 1278 "y.tab.c"
 break;
 case 6:
-#line 72 "prob1.y"
+#line 73 "prob1.y"
 	{printf("\n");}
-#line 1282 "y.tab.c"
+#line 1283 "y.tab.c"
 break;
-case 28:
-#line 90 "prob1.y"
+case 7:
+#line 75 "prob1.y"
+	{ yyval.node = yystack.l_mark[0].node; }
+#line 1288 "y.tab.c"
+break;
+case 8:
+#line 76 "prob1.y"
 	{
-						yyval.node = yystack.l_mark[0].node;
-					}
-#line 1289 "y.tab.c"
+							yyval.node = malloc(sizeof(struct ASTNode));
+							if(yyval.node == NULL){
+								printf("Out of memory\n");
+								exit(0);
+							}
+							yyval.node->token = NODETYPE_OPERATOR;
+							yyval.node->info.opInfo.left = yystack.l_mark[-2].node;
+							yyval.node->info.opInfo.right = yystack.l_mark[0].node;
+							strcpy(yyval.node->info.opInfo.op, "=");
+							genTemp();
+							strcpy(yyval.node->temp_var, temp_var_g);
+							yyval.node->intValue = yystack.l_mark[0].node->intValue;
+							printf("\n%s = %s", yyval.node->temp_var, yyval.node->info.opInfo.right->temp_var);
+						}
+#line 1307 "y.tab.c"
 break;
-case 29:
-#line 93 "prob1.y"
+case 9:
+#line 92 "prob1.y"
+	{ yyval.node = yystack.l_mark[0].node; }
+#line 1312 "y.tab.c"
+break;
+case 10:
+#line 94 "prob1.y"
 	{
-
-					}
-#line 1296 "y.tab.c"
+							yyval.node = yystack.l_mark[0].node;
+						}
+#line 1319 "y.tab.c"
 break;
-case 34:
+case 11:
 #line 97 "prob1.y"
 	{
+							yyval.node = malloc(sizeof(struct ASTNode));
+							if(yyval.node == NULL){
+								printf("Out of memory\n");
+								exit(0);
+							}
+							yyval.node->token = NODETYPE_OPERATOR;
+							yyval.node->info.opInfo.left = yystack.l_mark[-2].node;
+							yyval.node->info.opInfo.right = yystack.l_mark[0].node;
+							strcpy(yyval.node->info.opInfo.op, "||");
+							genTemp();
+							strcpy(yyval.node->temp_var, temp_var_g);
+							yyval.node->intValue = yystack.l_mark[-2].node->intValue || yystack.l_mark[0].node->intValue;
+							printf("\n%s = %s || %s", yyval.node->temp_var, yyval.node->info.opInfo.left->temp_var, yyval.node->info.opInfo.right->temp_var);
+						}
+#line 1338 "y.tab.c"
+break;
+case 12:
+#line 113 "prob1.y"
+	{
+							yyval.node = yystack.l_mark[0].node;
+						}
+#line 1345 "y.tab.c"
+break;
+case 13:
+#line 116 "prob1.y"
+	{
+							yyval.node = malloc(sizeof(struct ASTNode));
+							if(yyval.node == NULL){
+								printf("Out of memory\n");
+								exit(0);
+							}
+							yyval.node->token = NODETYPE_OPERATOR;
+							yyval.node->info.opInfo.left = yystack.l_mark[-2].node;
+							yyval.node->info.opInfo.right = yystack.l_mark[0].node;
+							strcpy(yyval.node->info.opInfo.op, "&&");
+							genTemp();
+							strcpy(yyval.node->temp_var, temp_var_g);
+							yyval.node->intValue = yystack.l_mark[-2].node->intValue && yystack.l_mark[0].node->intValue;
+							printf("\n%s = %s && %s", yyval.node->temp_var, yyval.node->info.opInfo.left->temp_var, yyval.node->info.opInfo.right->temp_var);
+						}
+#line 1364 "y.tab.c"
+break;
+case 14:
+#line 132 "prob1.y"
+	{
+							yyval.node = yystack.l_mark[0].node;
+						}
+#line 1371 "y.tab.c"
+break;
+case 15:
+#line 135 "prob1.y"
+	{
+							yyval.node = malloc(sizeof(struct ASTNode));
+							if(yyval.node == NULL){
+								printf("Out of memory\n");
+								exit(0);
+							}
+							yyval.node->token = NODETYPE_OPERATOR;
+							yyval.node->info.opInfo.left = yystack.l_mark[-2].node;
+							yyval.node->info.opInfo.right = yystack.l_mark[0].node;
+							strcpy(yyval.node->info.opInfo.op, "==");
+							genTemp();
+							strcpy(yyval.node->temp_var, temp_var_g);
+							yyval.node->intValue = yystack.l_mark[-2].node->intValue == yystack.l_mark[0].node->intValue;
+							printf("\n%s = %s == %s", yyval.node->temp_var, yyval.node->info.opInfo.left->temp_var, yyval.node->info.opInfo.right->temp_var);
+						}
+#line 1390 "y.tab.c"
+break;
+case 16:
+#line 150 "prob1.y"
+	{
+							yyval.node = malloc(sizeof(struct ASTNode));
+							if(yyval.node == NULL){
+								printf("Out of memory\n");
+								exit(0);
+							}
+							yyval.node->token = NODETYPE_OPERATOR;
+							yyval.node->info.opInfo.left = yystack.l_mark[-2].node;
+							yyval.node->info.opInfo.right = yystack.l_mark[0].node;
+							strcpy(yyval.node->info.opInfo.op, "!=");
+							genTemp();
+							strcpy(yyval.node->temp_var, temp_var_g);
+							yyval.node->intValue = yystack.l_mark[-2].node->intValue != yystack.l_mark[0].node->intValue;
+							printf("\n%s = %s != %s", yyval.node->temp_var, yyval.node->info.opInfo.left->temp_var, yyval.node->info.opInfo.right->temp_var);
+						}
+#line 1409 "y.tab.c"
+break;
+case 17:
+#line 166 "prob1.y"
+	{
+							yyval.node = yystack.l_mark[0].node;
+						}
+#line 1416 "y.tab.c"
+break;
+case 18:
+#line 169 "prob1.y"
+	{
+							yyval.node = malloc(sizeof(struct ASTNode));
+							if(yyval.node == NULL){
+								printf("Out of memory\n");
+								exit(0);
+							}
+							yyval.node->token = NODETYPE_OPERATOR;
+							yyval.node->info.opInfo.left = yystack.l_mark[-2].node;
+							yyval.node->info.opInfo.right = yystack.l_mark[0].node;
+							strcpy(yyval.node->info.opInfo.op, "<");
+							genTemp();
+							strcpy(yyval.node->temp_var, temp_var_g);
+							yyval.node->intValue = yystack.l_mark[-2].node->intValue < yystack.l_mark[0].node->intValue;
+							printf("\n%s = %s < %s", yyval.node->temp_var, yyval.node->info.opInfo.left->temp_var, yyval.node->info.opInfo.right->temp_var);
+						}
+#line 1435 "y.tab.c"
+break;
+case 19:
+#line 184 "prob1.y"
+	{
+							yyval.node = malloc(sizeof(struct ASTNode));
+							if(yyval.node == NULL){
+								printf("Out of memory\n");
+								exit(0);
+							}
+							yyval.node->token = NODETYPE_OPERATOR;
+							yyval.node->info.opInfo.left = yystack.l_mark[-2].node;
+							yyval.node->info.opInfo.right = yystack.l_mark[0].node;
+							strcpy(yyval.node->info.opInfo.op, ">");
+							genTemp();
+							strcpy(yyval.node->temp_var, temp_var_g);
+							yyval.node->intValue = yystack.l_mark[-2].node->intValue > yystack.l_mark[0].node->intValue;
+							printf("\n%s = %s > %s", yyval.node->temp_var, yyval.node->info.opInfo.left->temp_var, yyval.node->info.opInfo.right->temp_var);
+						}
+#line 1454 "y.tab.c"
+break;
+case 20:
+#line 199 "prob1.y"
+	{
+							yyval.node = malloc(sizeof(struct ASTNode));
+							if(yyval.node == NULL){
+								printf("Out of memory\n");
+								exit(0);
+							}
+							yyval.node->token = NODETYPE_OPERATOR;
+							yyval.node->info.opInfo.left = yystack.l_mark[-2].node;
+							yyval.node->info.opInfo.right = yystack.l_mark[0].node;
+							strcpy(yyval.node->info.opInfo.op, "<=");
+							genTemp();
+							strcpy(yyval.node->temp_var, temp_var_g);
+							yyval.node->intValue = yystack.l_mark[-2].node->intValue <= yystack.l_mark[0].node->intValue;
+							printf("\n%s = %s <= %s", yyval.node->temp_var, yyval.node->info.opInfo.left->temp_var, yyval.node->info.opInfo.right->temp_var);
+						}
+#line 1473 "y.tab.c"
+break;
+case 21:
+#line 214 "prob1.y"
+	{
+							yyval.node = malloc(sizeof(struct ASTNode));
+							if(yyval.node == NULL){
+								printf("Out of memory\n");
+								exit(0);
+							}
+							yyval.node->token = NODETYPE_OPERATOR;
+							yyval.node->info.opInfo.left = yystack.l_mark[-2].node;
+							yyval.node->info.opInfo.right = yystack.l_mark[0].node;
+							strcpy(yyval.node->info.opInfo.op, ">=");
+							genTemp();
+							strcpy(yyval.node->temp_var, temp_var_g);
+							yyval.node->intValue = yystack.l_mark[-2].node->intValue >= yystack.l_mark[0].node->intValue;
+							printf("\n%s = %s >= %s", yyval.node->temp_var, yyval.node->info.opInfo.left->temp_var, yyval.node->info.opInfo.right->temp_var);
+						}
+#line 1492 "y.tab.c"
+break;
+case 22:
+#line 230 "prob1.y"
+	{
 						yyval.node = yystack.l_mark[0].node;
 					}
-#line 1303 "y.tab.c"
+#line 1499 "y.tab.c"
+break;
+case 23:
+#line 233 "prob1.y"
+	{
+						yyval.node = malloc(sizeof(struct ASTNode));
+						if(yyval.node == NULL){
+							printf("Out of memory\n");
+							exit(0);
+						}
+
+						yyval.node->token = NODETYPE_OPERATOR;
+						yyval.node->info.opInfo.left = yystack.l_mark[-2].node;
+						yyval.node->info.opInfo.right = yystack.l_mark[0].node;
+						strcpy(yyval.node->info.opInfo.op, "+");
+						genTemp();
+						strcpy(yyval.node->temp_var, temp_var_g);
+						yyval.node->intValue = yystack.l_mark[-2].node->intValue + yystack.l_mark[0].node->intValue;
+						printf("\n%s = %s + %s", yyval.node->temp_var, yyval.node->info.opInfo.left->temp_var, yyval.node->info.opInfo.right->temp_var);
+					}
+#line 1519 "y.tab.c"
+break;
+case 24:
+#line 249 "prob1.y"
+	{
+						yyval.node = malloc(sizeof(struct ASTNode));
+						if(yyval.node == NULL){
+							printf("Out of memory\n");
+							exit(0);
+						}
+						yyval.node->token = NODETYPE_OPERATOR;
+						yyval.node->info.opInfo.left = yystack.l_mark[-2].node;
+						yyval.node->info.opInfo.right = yystack.l_mark[0].node;
+						strcpy(yyval.node->info.opInfo.op, "-");
+						genTemp();
+						strcpy(yyval.node->temp_var, temp_var_g);
+						yyval.node->intValue = yystack.l_mark[-2].node->intValue - yystack.l_mark[0].node->intValue;
+						printf("\n%s = %s - %s", yyval.node->temp_var, yyval.node->info.opInfo.left->temp_var, yyval.node->info.opInfo.right->temp_var);
+					}
+#line 1538 "y.tab.c"
+break;
+case 25:
+#line 265 "prob1.y"
+	{
+								yyval.node = yystack.l_mark[0].node;
+							}
+#line 1545 "y.tab.c"
+break;
+case 26:
+#line 268 "prob1.y"
+	{
+								yyval.node = malloc(sizeof(struct ASTNode));
+								if(yyval.node == NULL){
+									printf("Out of memory\n");
+									exit(0);
+								}
+								yyval.node->token = NODETYPE_OPERATOR;
+								yyval.node->info.opInfo.left = yystack.l_mark[-2].node;
+								yyval.node->info.opInfo.right = yystack.l_mark[0].node;
+								strcpy(yyval.node->info.opInfo.op, "*");
+								genTemp();
+								strcpy(yyval.node->temp_var, temp_var_g);
+								yyval.node->intValue = yystack.l_mark[-2].node->intValue * yystack.l_mark[0].node->intValue;
+								printf("\n%s = %s * %s", yyval.node->temp_var, yyval.node->info.opInfo.left->temp_var, yyval.node->info.opInfo.right->temp_var);
+							}
+#line 1564 "y.tab.c"
+break;
+case 27:
+#line 283 "prob1.y"
+	{
+								yyval.node = malloc(sizeof(struct ASTNode));
+								if(yyval.node == NULL){
+									printf("Out of memory\n");
+									exit(0);
+								}
+								yyval.node->token = NODETYPE_OPERATOR;
+								yyval.node->info.opInfo.left = yystack.l_mark[-2].node;
+								yyval.node->info.opInfo.right = yystack.l_mark[0].node;
+								strcpy(yyval.node->info.opInfo.op, "/");
+								genTemp();
+								strcpy(yyval.node->temp_var, temp_var_g);
+								yyval.node->intValue = yystack.l_mark[-2].node->intValue / yystack.l_mark[0].node->intValue;
+								printf("\n%s = %s / %s", yyval.node->temp_var, yyval.node->info.opInfo.left->temp_var, yyval.node->info.opInfo.right->temp_var);
+							}
+#line 1583 "y.tab.c"
+break;
+case 28:
+#line 299 "prob1.y"
+	{
+						yyval.node = yystack.l_mark[0].node;
+					}
+#line 1590 "y.tab.c"
+break;
+case 29:
+#line 302 "prob1.y"
+	{
+						yyval.node = malloc(sizeof(struct ASTNode));
+						if(yyval.node == NULL){
+							printf("Out of memory\n");
+							exit(0);
+						}
+						yyval.node->token = NODETYPE_OPERATOR;
+						yyval.node->info.opInfo.right = yystack.l_mark[0].node;
+						strcpy(yyval.node->info.opInfo.op, "++");
+						genTemp();
+						strcpy(yyval.node->temp_var, temp_var_g);
+						yystack.l_mark[0].node->intValue = yystack.l_mark[0].node->intValue + 1;
+						printf("\n%s = %s + 1", yystack.l_mark[0].node->temp_var, yystack.l_mark[0].node->temp_var);
+						yyval.node->intValue = yystack.l_mark[0].node->intValue;
+						printf("\n%s = %s", yyval.node->temp_var, yyval.node->info.opInfo.right->temp_var);
+					}
+#line 1610 "y.tab.c"
+break;
+case 30:
+#line 318 "prob1.y"
+	{
+						yyval.node = malloc(sizeof(struct ASTNode));
+						if(yyval.node == NULL){
+							printf("Out of memory\n");
+							exit(0);
+						}
+						yyval.node->token = NODETYPE_OPERATOR;
+						yyval.node->info.opInfo.right = yystack.l_mark[0].node;
+						strcpy(yyval.node->info.opInfo.op, "--");
+						genTemp();
+						strcpy(yyval.node->temp_var, temp_var_g);
+						yystack.l_mark[0].node->intValue = yystack.l_mark[0].node->intValue - 1;
+						printf("\n%s = %s - 1", yystack.l_mark[0].node->temp_var, yystack.l_mark[0].node->temp_var);
+						yyval.node->intValue = yystack.l_mark[0].node->intValue;
+						printf("\n%s = %s", yyval.node->temp_var, yyval.node->info.opInfo.right->temp_var);
+					}
+#line 1630 "y.tab.c"
+break;
+case 31:
+#line 334 "prob1.y"
+	{
+						yyval.node = yystack.l_mark[0].node;
+					}
+#line 1637 "y.tab.c"
+break;
+case 32:
+#line 337 "prob1.y"
+	{
+						yyval.node = malloc(sizeof(struct ASTNode));
+						if(yyval.node == NULL){
+							printf("Out of memory\n");
+							exit(0);
+						}
+						yyval.node->token = NODETYPE_OPERATOR;
+						yyval.node->info.opInfo.right = yystack.l_mark[0].node;
+						strcpy(yyval.node->info.opInfo.op, "minus");
+						genTemp();
+						strcpy(yyval.node->temp_var, temp_var_g);
+						yyval.node->intValue = -1 * yystack.l_mark[0].node->intValue;
+						printf("\n%s = -1 * %s", yyval.node->temp_var, yyval.node->info.opInfo.right->temp_var);
+					}
+#line 1655 "y.tab.c"
+break;
+case 33:
+#line 351 "prob1.y"
+	{
+						yyval.node = malloc(sizeof(struct ASTNode));
+						if(yyval.node == NULL){
+							printf("Out of memory\n");
+							exit(0);
+						}
+						yyval.node->token = NODETYPE_OPERATOR;
+						yyval.node->info.opInfo.right = yystack.l_mark[0].node;
+						strcpy(yyval.node->info.opInfo.op, "!");
+						genTemp();
+						strcpy(yyval.node->temp_var, temp_var_g);
+						yyval.node->intValue = !yystack.l_mark[0].node->intValue;
+						printf("\n%s = !%s", yyval.node->temp_var, yyval.node->info.opInfo.right->temp_var);
+					}
+#line 1673 "y.tab.c"
+break;
+case 34:
+#line 366 "prob1.y"
+	{
+						yyval.node = yystack.l_mark[0].node;
+					}
+#line 1680 "y.tab.c"
 break;
 case 35:
-#line 100 "prob1.y"
+#line 369 "prob1.y"
 	{
 						yyval.node = malloc(sizeof(struct ASTNode));
 						if (yyval.node == NULL) {
@@ -1310,18 +1687,18 @@ case 35:
 						}
 						yyval.node->token = NODETYPE_OPERATOR;
 						yyval.node->info.opInfo.left = yystack.l_mark[-1].node;
-						yyval.node->info.intValue = yystack.l_mark[-1].node->info.intValue;
+						yyval.node->intValue = yystack.l_mark[-1].node->intValue;
 						strcpy(yyval.node->info.opInfo.op, "++");
 						genTemp();
 						strcpy(yyval.node->temp_var, temp_var_g);
 						printf("\n%s = %s", yyval.node->temp_var, yyval.node->info.opInfo.left->temp_var);
-						yystack.l_mark[-1].node->info.intValue = yystack.l_mark[-1].node->info.intValue + 1;
+						yystack.l_mark[-1].node->intValue = yystack.l_mark[-1].node->intValue + 1;
 						printf("\n%s = %s + 1", yystack.l_mark[-1].node->temp_var, yystack.l_mark[-1].node->temp_var);
 					}
-#line 1322 "y.tab.c"
+#line 1699 "y.tab.c"
 break;
 case 36:
-#line 115 "prob1.y"
+#line 384 "prob1.y"
 	{
 						yyval.node = malloc(sizeof(struct ASTNode));
 						if (yyval.node == NULL) {
@@ -1330,17 +1707,17 @@ case 36:
 						yyval.node->token = NODETYPE_OPERATOR;
 						yyval.node->info.opInfo.left = yystack.l_mark[-1].node;
 						strcpy(yyval.node->info.opInfo.op, "--");
-						yyval.node->info.intValue = yystack.l_mark[-1].node->info.intValue;
+						yyval.node->intValue = yystack.l_mark[-1].node->intValue;
 						genTemp();
 						strcpy(yyval.node->temp_var, temp_var_g);
 						printf("\n%s = %s", yyval.node->temp_var, yyval.node->info.opInfo.left->temp_var);
-						yystack.l_mark[-1].node->info.intValue = yystack.l_mark[-1].node->info.intValue - 1;
+						yystack.l_mark[-1].node->intValue = yystack.l_mark[-1].node->intValue - 1;
 						printf("\n%s = %s - 1", yystack.l_mark[-1].node->temp_var, yystack.l_mark[-1].node->temp_var);
 					}
-#line 1341 "y.tab.c"
+#line 1718 "y.tab.c"
 break;
 case 37:
-#line 131 "prob1.y"
+#line 400 "prob1.y"
 	{
 						yyval.node = malloc(sizeof(ASTNode));
 						if(yyval.node == NULL){
@@ -1348,15 +1725,15 @@ case 37:
 							exit(0);
 						}
 						yyval.node->token = NODETYPE_CONSTANT_INT;
-						yyval.node->info.intValue = yystack.l_mark[0].intValue;
+						yyval.node->intValue = yystack.l_mark[0].intValue;
 						genTemp();
 						strcpy(yyval.node->temp_var, temp_var_g);
-						printf("\n%s = %d", yyval.node->temp_var, yyval.node->info.intValue);
+						printf("\n%s = %d", yyval.node->temp_var, yyval.node->intValue);
 					}
-#line 1357 "y.tab.c"
+#line 1734 "y.tab.c"
 break;
 case 38:
-#line 143 "prob1.y"
+#line 412 "prob1.y"
 	{
 						yyval.node = malloc(sizeof(ASTNode));
 						if(yyval.node == NULL){
@@ -1364,21 +1741,21 @@ case 38:
 							exit(0);
 						}
 						yyval.node->token = NODETYPE_IDENTIFIER;
-						strcpy(yyval.node->info.lexeme, yystack.l_mark[0].lexeme);
+						strcpy(yyval.node->lexeme, yystack.l_mark[0].lexeme);
 						genTemp();
 						strcpy(yyval.node->temp_var, temp_var_g);
-						printf("\n%s = %s", yyval.node->temp_var, yyval.node->info.lexeme);
+						printf("\n%s = %s", yyval.node->temp_var, yyval.node->lexeme);
 					}
-#line 1373 "y.tab.c"
+#line 1750 "y.tab.c"
 break;
 case 39:
-#line 155 "prob1.y"
+#line 424 "prob1.y"
 	{
 						yyval.node = yystack.l_mark[-1].node;
 					}
-#line 1380 "y.tab.c"
+#line 1757 "y.tab.c"
 break;
-#line 1382 "y.tab.c"
+#line 1759 "y.tab.c"
     default:
         break;
     }
