@@ -1,8 +1,16 @@
 a = b + 20;
 a - h &&j;
+if (y)
+{
+    g = 9;
+}
 if (x < y && u == 7)
 {
     a++;
+}
+else
+{
+    b--;
 }
 while (v)
 {

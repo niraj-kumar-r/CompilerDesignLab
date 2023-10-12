@@ -54,15 +54,15 @@ typedef struct ASTNode {
 %token ADD SUB MUL DIV INC DEC ASSIGN LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET SEMICOLON IF ELSE WHILE LT GT LEQ GEQ EQ NEQ AND OR NOT
 %token <intValue> INTEGER
 %token <lexeme> IDENTIFIER
-%type <node> slist assignmentExpression conditionalExpression logicalOrExpression logicalAndExpression equalityExpression relationalExpression additiveExpression multiplicativeExpression unaryExpression postfixExpression primaryExpression selectionStatement iterationStatement
+%type <node> slist assignmentExpression conditionalExpression logicalOrExpression logicalAndExpression equalityExpression relationalExpression additiveExpression multiplicativeExpression unaryExpression postfixExpression primaryExpression selectionStatement elseSelection iterationStatement
 
 %%
 
 program : slist {printf("\n\nCompleted\n");};
 
-slist : slist assignmentExpression SEMICOLON {printf("\nAccepted assignment Expression");}
-		| slist selectionStatement {printf("\nAccepted selection statement");}
-		| slist iterationStatement {printf("\nAccepted iteration statement");}
+slist : slist assignmentExpression SEMICOLON 
+		| slist selectionStatement 
+		| slist iterationStatement 
 		| slist error {printf("\nRejected");}
 		| {printf("\n");};
 
@@ -419,10 +419,67 @@ primaryExpression : INTEGER {
 						$$ = $2;
 					};
 
-selectionStatement :	IF LPAREN assignmentExpression RPAREN LBRACE slist RBRACE
-						| IF LPAREN assignmentExpression RPAREN LBRACE slist RBRACE ELSE LBRACE slist RBRACE;
+selectionStatement :	IF LPAREN assignmentExpression RPAREN LBRACE {
+							$$ = malloc(sizeof(struct ASTNode));
+							if($$ == NULL){
+								printf("Out of memory\n");
+								exit(0);
+							}
+							$$->token = NODETYPE_IF_ELSE;
+							$$->info.flowControlInfo.condition = $3;
+							genLabel();
+							strcpy($$->info.flowControlInfo.true_label, label_g);
+							genLabel();
+							strcpy($$->info.flowControlInfo.false_label, label_g);
+							genLabel();
+							strcpy($$->info.flowControlInfo.next_label, label_g);
+							printf("\nif %s goto %s", $$->info.flowControlInfo.condition->temp_var, $$->info.flowControlInfo.true_label);
+							printf("\ngoto %s", $$->info.flowControlInfo.false_label);
+							printf("\n\n%s:", $$->info.flowControlInfo.true_label);
+						} slist {
+							$$ = $6;
+							$$->info.flowControlInfo.trueBranch = $7;
+							printf("\ngoto %s", $$->info.flowControlInfo.next_label);
+							printf("\n\n%s:", $$->info.flowControlInfo.false_label);
+						} RBRACE elseSelection {
+							$$ = $8;
+							ASTNode *temp = $10;
+							if(temp != NULL){
+								$$->info.flowControlInfo.falseBranch = temp;
+							}
+							printf("\n\n%s:", $$->info.flowControlInfo.next_label);
+						};
 
-iterationStatement : WHILE LPAREN assignmentExpression RPAREN LBRACE slist RBRACE;
+elseSelection : ELSE LBRACE slist RBRACE {
+					$$ = $3;
+				} | { $$ = NULL;};
+
+iterationStatement :	WHILE {
+							$$ = malloc(sizeof(struct ASTNode));
+							if($$ == NULL){
+								printf("Out of memory\n");
+								exit(0);
+							}
+							$$->token = NODETYPE_WHILE;
+							genLabel();
+							strcpy($$->info.flowControlInfo.condition_label, label_g);
+							genLabel();
+							strcpy($$->info.flowControlInfo.true_label, label_g);
+							genLabel();
+							strcpy($$->info.flowControlInfo.false_label, label_g);
+							printf("\n\n%s:", $$->info.flowControlInfo.condition_label);
+						} LPAREN assignmentExpression {
+							$$ = $2;
+							$$->info.flowControlInfo.condition = $4;
+							printf("\nif %s goto %s", $$->info.flowControlInfo.condition->temp_var, $$->info.flowControlInfo.true_label);
+							printf("\ngoto %s", $$->info.flowControlInfo.false_label);
+							printf("\n\n%s:", $$->info.flowControlInfo.true_label);
+						} RPAREN LBRACE slist RBRACE {
+							$$ = $5;
+							$$->info.flowControlInfo.trueBranch = $8;
+							printf("\ngoto %s", $$->info.flowControlInfo.condition_label);
+							printf("\n\n%s:", $$->info.flowControlInfo.false_label);
+						};
 
 
 %%
