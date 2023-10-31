@@ -1,0 +1,989 @@
+   0  $accept : slist $end
+
+   1  $$1 :
+
+   2  slist : assignmentexpression SEMICOLON $$1 slist
+
+   3  $$2 :
+
+   4  $$3 :
+
+   5  $$4 :
+
+   6  $$5 :
+
+   7  slist : IF LPAREN booleanexpression RPAREN LBRACE $$2 slist $$3 RBRACE ELSE LBRACE $$4 slist RBRACE $$5 slist
+
+   8  $$6 :
+
+   9  slist : error $$6 SEMICOLON slist
+  10        |
+
+  11  assignmentexpression : variable ASSIGN additiveexpression
+  12                       | variable INC
+  13                       | variable DEC
+  14                       | INC variable
+  15                       | DEC variable
+
+  16  variable : IDENTIFIER
+  17           | LPAREN variable RPAREN
+
+  18  booleanexpression : primaryexpression
+  19                    | primaryexpression LT primaryexpression
+  20                    | primaryexpression GT primaryexpression
+  21                    | primaryexpression LEQ primaryexpression
+  22                    | primaryexpression GEQ primaryexpression
+  23                    | primaryexpression EQ primaryexpression
+  24                    | primaryexpression NEQ primaryexpression
+  25                    | primaryexpression AND primaryexpression
+  26                    | primaryexpression OR primaryexpression
+  27                    | NOT primaryexpression
+
+  28  additiveexpression : multiplicativeexpression
+  29                     | additiveexpression ADD multiplicativeexpression
+  30                     | additiveexpression SUB multiplicativeexpression
+
+  31  multiplicativeexpression : unaryexpression
+  32                           | multiplicativeexpression MUL unaryexpression
+  33                           | multiplicativeexpression DIV unaryexpression
+
+  34  unaryexpression : postfixexpression
+  35                  | INC unaryexpression
+  36                  | DEC unaryexpression
+  37                  | ADD unaryexpression
+  38                  | SUB unaryexpression
+
+  39  postfixexpression : primaryexpression
+  40                    | postfixexpression INC
+  41                    | postfixexpression DEC
+
+  42  primaryexpression : constant
+  43                    | IDENTIFIER
+  44                    | LPAREN additiveexpression RPAREN
+
+  45  constant : INTEGER
+
+state 0
+	$accept : . slist $end  (0)
+	slist : .  (10)
+
+	error  shift 1
+	INC  shift 2
+	DEC  shift 3
+	LPAREN  shift 4
+	IF  shift 5
+	IDENTIFIER  shift 6
+	$end  reduce 10
+
+	slist  goto 7
+	assignmentexpression  goto 8
+	variable  goto 9
+
+
+state 1
+	slist : error . $$6 SEMICOLON slist  (9)
+	$$6 : .  (8)
+
+	.  reduce 8
+
+	$$6  goto 10
+
+
+state 2
+	assignmentexpression : INC . variable  (14)
+
+	LPAREN  shift 4
+	IDENTIFIER  shift 6
+	.  error
+
+	variable  goto 11
+
+
+state 3
+	assignmentexpression : DEC . variable  (15)
+
+	LPAREN  shift 4
+	IDENTIFIER  shift 6
+	.  error
+
+	variable  goto 12
+
+
+state 4
+	variable : LPAREN . variable RPAREN  (17)
+
+	LPAREN  shift 4
+	IDENTIFIER  shift 6
+	.  error
+
+	variable  goto 13
+
+
+state 5
+	slist : IF . LPAREN booleanexpression RPAREN LBRACE $$2 slist $$3 RBRACE ELSE LBRACE $$4 slist RBRACE $$5 slist  (7)
+
+	LPAREN  shift 14
+	.  error
+
+
+state 6
+	variable : IDENTIFIER .  (16)
+
+	.  reduce 16
+
+
+state 7
+	$accept : slist . $end  (0)
+
+	$end  accept
+
+
+state 8
+	slist : assignmentexpression . SEMICOLON $$1 slist  (2)
+
+	SEMICOLON  shift 15
+	.  error
+
+
+state 9
+	assignmentexpression : variable . ASSIGN additiveexpression  (11)
+	assignmentexpression : variable . INC  (12)
+	assignmentexpression : variable . DEC  (13)
+
+	INC  shift 16
+	DEC  shift 17
+	ASSIGN  shift 18
+	.  error
+
+
+state 10
+	slist : error $$6 . SEMICOLON slist  (9)
+
+	SEMICOLON  shift 19
+	.  error
+
+
+state 11
+	assignmentexpression : INC variable .  (14)
+
+	.  reduce 14
+
+
+state 12
+	assignmentexpression : DEC variable .  (15)
+
+	.  reduce 15
+
+
+state 13
+	variable : LPAREN variable . RPAREN  (17)
+
+	RPAREN  shift 20
+	.  error
+
+
+state 14
+	slist : IF LPAREN . booleanexpression RPAREN LBRACE $$2 slist $$3 RBRACE ELSE LBRACE $$4 slist RBRACE $$5 slist  (7)
+
+	LPAREN  shift 21
+	NOT  shift 22
+	INTEGER  shift 23
+	IDENTIFIER  shift 24
+	.  error
+
+	primaryexpression  goto 25
+	constant  goto 26
+	booleanexpression  goto 27
+
+
+state 15
+	slist : assignmentexpression SEMICOLON . $$1 slist  (2)
+	$$1 : .  (1)
+
+	.  reduce 1
+
+	$$1  goto 28
+
+
+state 16
+	assignmentexpression : variable INC .  (12)
+
+	.  reduce 12
+
+
+state 17
+	assignmentexpression : variable DEC .  (13)
+
+	.  reduce 13
+
+
+state 18
+	assignmentexpression : variable ASSIGN . additiveexpression  (11)
+
+	ADD  shift 29
+	SUB  shift 30
+	INC  shift 31
+	DEC  shift 32
+	LPAREN  shift 21
+	INTEGER  shift 23
+	IDENTIFIER  shift 24
+	.  error
+
+	additiveexpression  goto 33
+	multiplicativeexpression  goto 34
+	unaryexpression  goto 35
+	postfixexpression  goto 36
+	primaryexpression  goto 37
+	constant  goto 26
+
+
+state 19
+	slist : error $$6 SEMICOLON . slist  (9)
+	slist : .  (10)
+
+	error  shift 1
+	INC  shift 2
+	DEC  shift 3
+	LPAREN  shift 4
+	IF  shift 5
+	IDENTIFIER  shift 6
+	$end  reduce 10
+	RBRACE  reduce 10
+
+	slist  goto 38
+	assignmentexpression  goto 8
+	variable  goto 9
+
+
+state 20
+	variable : LPAREN variable RPAREN .  (17)
+
+	.  reduce 17
+
+
+state 21
+	primaryexpression : LPAREN . additiveexpression RPAREN  (44)
+
+	ADD  shift 29
+	SUB  shift 30
+	INC  shift 31
+	DEC  shift 32
+	LPAREN  shift 21
+	INTEGER  shift 23
+	IDENTIFIER  shift 24
+	.  error
+
+	additiveexpression  goto 39
+	multiplicativeexpression  goto 34
+	unaryexpression  goto 35
+	postfixexpression  goto 36
+	primaryexpression  goto 37
+	constant  goto 26
+
+
+state 22
+	booleanexpression : NOT . primaryexpression  (27)
+
+	LPAREN  shift 21
+	INTEGER  shift 23
+	IDENTIFIER  shift 24
+	.  error
+
+	primaryexpression  goto 40
+	constant  goto 26
+
+
+state 23
+	constant : INTEGER .  (45)
+
+	.  reduce 45
+
+
+state 24
+	primaryexpression : IDENTIFIER .  (43)
+
+	.  reduce 43
+
+
+state 25
+	booleanexpression : primaryexpression .  (18)
+	booleanexpression : primaryexpression . LT primaryexpression  (19)
+	booleanexpression : primaryexpression . GT primaryexpression  (20)
+	booleanexpression : primaryexpression . LEQ primaryexpression  (21)
+	booleanexpression : primaryexpression . GEQ primaryexpression  (22)
+	booleanexpression : primaryexpression . EQ primaryexpression  (23)
+	booleanexpression : primaryexpression . NEQ primaryexpression  (24)
+	booleanexpression : primaryexpression . AND primaryexpression  (25)
+	booleanexpression : primaryexpression . OR primaryexpression  (26)
+
+	LT  shift 41
+	GT  shift 42
+	LEQ  shift 43
+	GEQ  shift 44
+	EQ  shift 45
+	NEQ  shift 46
+	AND  shift 47
+	OR  shift 48
+	RPAREN  reduce 18
+
+
+state 26
+	primaryexpression : constant .  (42)
+
+	.  reduce 42
+
+
+state 27
+	slist : IF LPAREN booleanexpression . RPAREN LBRACE $$2 slist $$3 RBRACE ELSE LBRACE $$4 slist RBRACE $$5 slist  (7)
+
+	RPAREN  shift 49
+	.  error
+
+
+state 28
+	slist : assignmentexpression SEMICOLON $$1 . slist  (2)
+	slist : .  (10)
+
+	error  shift 1
+	INC  shift 2
+	DEC  shift 3
+	LPAREN  shift 4
+	IF  shift 5
+	IDENTIFIER  shift 6
+	$end  reduce 10
+	RBRACE  reduce 10
+
+	slist  goto 50
+	assignmentexpression  goto 8
+	variable  goto 9
+
+
+state 29
+	unaryexpression : ADD . unaryexpression  (37)
+
+	ADD  shift 29
+	SUB  shift 30
+	INC  shift 31
+	DEC  shift 32
+	LPAREN  shift 21
+	INTEGER  shift 23
+	IDENTIFIER  shift 24
+	.  error
+
+	unaryexpression  goto 51
+	postfixexpression  goto 36
+	primaryexpression  goto 37
+	constant  goto 26
+
+
+state 30
+	unaryexpression : SUB . unaryexpression  (38)
+
+	ADD  shift 29
+	SUB  shift 30
+	INC  shift 31
+	DEC  shift 32
+	LPAREN  shift 21
+	INTEGER  shift 23
+	IDENTIFIER  shift 24
+	.  error
+
+	unaryexpression  goto 52
+	postfixexpression  goto 36
+	primaryexpression  goto 37
+	constant  goto 26
+
+
+state 31
+	unaryexpression : INC . unaryexpression  (35)
+
+	ADD  shift 29
+	SUB  shift 30
+	INC  shift 31
+	DEC  shift 32
+	LPAREN  shift 21
+	INTEGER  shift 23
+	IDENTIFIER  shift 24
+	.  error
+
+	unaryexpression  goto 53
+	postfixexpression  goto 36
+	primaryexpression  goto 37
+	constant  goto 26
+
+
+state 32
+	unaryexpression : DEC . unaryexpression  (36)
+
+	ADD  shift 29
+	SUB  shift 30
+	INC  shift 31
+	DEC  shift 32
+	LPAREN  shift 21
+	INTEGER  shift 23
+	IDENTIFIER  shift 24
+	.  error
+
+	unaryexpression  goto 54
+	postfixexpression  goto 36
+	primaryexpression  goto 37
+	constant  goto 26
+
+
+state 33
+	assignmentexpression : variable ASSIGN additiveexpression .  (11)
+	additiveexpression : additiveexpression . ADD multiplicativeexpression  (29)
+	additiveexpression : additiveexpression . SUB multiplicativeexpression  (30)
+
+	ADD  shift 55
+	SUB  shift 56
+	SEMICOLON  reduce 11
+
+
+state 34
+	additiveexpression : multiplicativeexpression .  (28)
+	multiplicativeexpression : multiplicativeexpression . MUL unaryexpression  (32)
+	multiplicativeexpression : multiplicativeexpression . DIV unaryexpression  (33)
+
+	MUL  shift 57
+	DIV  shift 58
+	ADD  reduce 28
+	SUB  reduce 28
+	RPAREN  reduce 28
+	SEMICOLON  reduce 28
+
+
+state 35
+	multiplicativeexpression : unaryexpression .  (31)
+
+	.  reduce 31
+
+
+state 36
+	unaryexpression : postfixexpression .  (34)
+	postfixexpression : postfixexpression . INC  (40)
+	postfixexpression : postfixexpression . DEC  (41)
+
+	INC  shift 59
+	DEC  shift 60
+	ADD  reduce 34
+	SUB  reduce 34
+	MUL  reduce 34
+	DIV  reduce 34
+	RPAREN  reduce 34
+	SEMICOLON  reduce 34
+
+
+state 37
+	postfixexpression : primaryexpression .  (39)
+
+	.  reduce 39
+
+
+state 38
+	slist : error $$6 SEMICOLON slist .  (9)
+
+	.  reduce 9
+
+
+state 39
+	additiveexpression : additiveexpression . ADD multiplicativeexpression  (29)
+	additiveexpression : additiveexpression . SUB multiplicativeexpression  (30)
+	primaryexpression : LPAREN additiveexpression . RPAREN  (44)
+
+	ADD  shift 55
+	SUB  shift 56
+	RPAREN  shift 61
+	.  error
+
+
+state 40
+	booleanexpression : NOT primaryexpression .  (27)
+
+	.  reduce 27
+
+
+state 41
+	booleanexpression : primaryexpression LT . primaryexpression  (19)
+
+	LPAREN  shift 21
+	INTEGER  shift 23
+	IDENTIFIER  shift 24
+	.  error
+
+	primaryexpression  goto 62
+	constant  goto 26
+
+
+state 42
+	booleanexpression : primaryexpression GT . primaryexpression  (20)
+
+	LPAREN  shift 21
+	INTEGER  shift 23
+	IDENTIFIER  shift 24
+	.  error
+
+	primaryexpression  goto 63
+	constant  goto 26
+
+
+state 43
+	booleanexpression : primaryexpression LEQ . primaryexpression  (21)
+
+	LPAREN  shift 21
+	INTEGER  shift 23
+	IDENTIFIER  shift 24
+	.  error
+
+	primaryexpression  goto 64
+	constant  goto 26
+
+
+state 44
+	booleanexpression : primaryexpression GEQ . primaryexpression  (22)
+
+	LPAREN  shift 21
+	INTEGER  shift 23
+	IDENTIFIER  shift 24
+	.  error
+
+	primaryexpression  goto 65
+	constant  goto 26
+
+
+state 45
+	booleanexpression : primaryexpression EQ . primaryexpression  (23)
+
+	LPAREN  shift 21
+	INTEGER  shift 23
+	IDENTIFIER  shift 24
+	.  error
+
+	primaryexpression  goto 66
+	constant  goto 26
+
+
+state 46
+	booleanexpression : primaryexpression NEQ . primaryexpression  (24)
+
+	LPAREN  shift 21
+	INTEGER  shift 23
+	IDENTIFIER  shift 24
+	.  error
+
+	primaryexpression  goto 67
+	constant  goto 26
+
+
+state 47
+	booleanexpression : primaryexpression AND . primaryexpression  (25)
+
+	LPAREN  shift 21
+	INTEGER  shift 23
+	IDENTIFIER  shift 24
+	.  error
+
+	primaryexpression  goto 68
+	constant  goto 26
+
+
+state 48
+	booleanexpression : primaryexpression OR . primaryexpression  (26)
+
+	LPAREN  shift 21
+	INTEGER  shift 23
+	IDENTIFIER  shift 24
+	.  error
+
+	primaryexpression  goto 69
+	constant  goto 26
+
+
+state 49
+	slist : IF LPAREN booleanexpression RPAREN . LBRACE $$2 slist $$3 RBRACE ELSE LBRACE $$4 slist RBRACE $$5 slist  (7)
+
+	LBRACE  shift 70
+	.  error
+
+
+state 50
+	slist : assignmentexpression SEMICOLON $$1 slist .  (2)
+
+	.  reduce 2
+
+
+state 51
+	unaryexpression : ADD unaryexpression .  (37)
+
+	.  reduce 37
+
+
+state 52
+	unaryexpression : SUB unaryexpression .  (38)
+
+	.  reduce 38
+
+
+state 53
+	unaryexpression : INC unaryexpression .  (35)
+
+	.  reduce 35
+
+
+state 54
+	unaryexpression : DEC unaryexpression .  (36)
+
+	.  reduce 36
+
+
+state 55
+	additiveexpression : additiveexpression ADD . multiplicativeexpression  (29)
+
+	ADD  shift 29
+	SUB  shift 30
+	INC  shift 31
+	DEC  shift 32
+	LPAREN  shift 21
+	INTEGER  shift 23
+	IDENTIFIER  shift 24
+	.  error
+
+	multiplicativeexpression  goto 71
+	unaryexpression  goto 35
+	postfixexpression  goto 36
+	primaryexpression  goto 37
+	constant  goto 26
+
+
+state 56
+	additiveexpression : additiveexpression SUB . multiplicativeexpression  (30)
+
+	ADD  shift 29
+	SUB  shift 30
+	INC  shift 31
+	DEC  shift 32
+	LPAREN  shift 21
+	INTEGER  shift 23
+	IDENTIFIER  shift 24
+	.  error
+
+	multiplicativeexpression  goto 72
+	unaryexpression  goto 35
+	postfixexpression  goto 36
+	primaryexpression  goto 37
+	constant  goto 26
+
+
+state 57
+	multiplicativeexpression : multiplicativeexpression MUL . unaryexpression  (32)
+
+	ADD  shift 29
+	SUB  shift 30
+	INC  shift 31
+	DEC  shift 32
+	LPAREN  shift 21
+	INTEGER  shift 23
+	IDENTIFIER  shift 24
+	.  error
+
+	unaryexpression  goto 73
+	postfixexpression  goto 36
+	primaryexpression  goto 37
+	constant  goto 26
+
+
+state 58
+	multiplicativeexpression : multiplicativeexpression DIV . unaryexpression  (33)
+
+	ADD  shift 29
+	SUB  shift 30
+	INC  shift 31
+	DEC  shift 32
+	LPAREN  shift 21
+	INTEGER  shift 23
+	IDENTIFIER  shift 24
+	.  error
+
+	unaryexpression  goto 74
+	postfixexpression  goto 36
+	primaryexpression  goto 37
+	constant  goto 26
+
+
+state 59
+	postfixexpression : postfixexpression INC .  (40)
+
+	.  reduce 40
+
+
+state 60
+	postfixexpression : postfixexpression DEC .  (41)
+
+	.  reduce 41
+
+
+state 61
+	primaryexpression : LPAREN additiveexpression RPAREN .  (44)
+
+	.  reduce 44
+
+
+state 62
+	booleanexpression : primaryexpression LT primaryexpression .  (19)
+
+	.  reduce 19
+
+
+state 63
+	booleanexpression : primaryexpression GT primaryexpression .  (20)
+
+	.  reduce 20
+
+
+state 64
+	booleanexpression : primaryexpression LEQ primaryexpression .  (21)
+
+	.  reduce 21
+
+
+state 65
+	booleanexpression : primaryexpression GEQ primaryexpression .  (22)
+
+	.  reduce 22
+
+
+state 66
+	booleanexpression : primaryexpression EQ primaryexpression .  (23)
+
+	.  reduce 23
+
+
+state 67
+	booleanexpression : primaryexpression NEQ primaryexpression .  (24)
+
+	.  reduce 24
+
+
+state 68
+	booleanexpression : primaryexpression AND primaryexpression .  (25)
+
+	.  reduce 25
+
+
+state 69
+	booleanexpression : primaryexpression OR primaryexpression .  (26)
+
+	.  reduce 26
+
+
+state 70
+	slist : IF LPAREN booleanexpression RPAREN LBRACE . $$2 slist $$3 RBRACE ELSE LBRACE $$4 slist RBRACE $$5 slist  (7)
+	$$2 : .  (3)
+
+	.  reduce 3
+
+	$$2  goto 75
+
+
+state 71
+	additiveexpression : additiveexpression ADD multiplicativeexpression .  (29)
+	multiplicativeexpression : multiplicativeexpression . MUL unaryexpression  (32)
+	multiplicativeexpression : multiplicativeexpression . DIV unaryexpression  (33)
+
+	MUL  shift 57
+	DIV  shift 58
+	ADD  reduce 29
+	SUB  reduce 29
+	RPAREN  reduce 29
+	SEMICOLON  reduce 29
+
+
+state 72
+	additiveexpression : additiveexpression SUB multiplicativeexpression .  (30)
+	multiplicativeexpression : multiplicativeexpression . MUL unaryexpression  (32)
+	multiplicativeexpression : multiplicativeexpression . DIV unaryexpression  (33)
+
+	MUL  shift 57
+	DIV  shift 58
+	ADD  reduce 30
+	SUB  reduce 30
+	RPAREN  reduce 30
+	SEMICOLON  reduce 30
+
+
+state 73
+	multiplicativeexpression : multiplicativeexpression MUL unaryexpression .  (32)
+
+	.  reduce 32
+
+
+state 74
+	multiplicativeexpression : multiplicativeexpression DIV unaryexpression .  (33)
+
+	.  reduce 33
+
+
+state 75
+	slist : IF LPAREN booleanexpression RPAREN LBRACE $$2 . slist $$3 RBRACE ELSE LBRACE $$4 slist RBRACE $$5 slist  (7)
+	slist : .  (10)
+
+	error  shift 1
+	INC  shift 2
+	DEC  shift 3
+	LPAREN  shift 4
+	IF  shift 5
+	IDENTIFIER  shift 6
+	RBRACE  reduce 10
+
+	slist  goto 76
+	assignmentexpression  goto 8
+	variable  goto 9
+
+
+state 76
+	slist : IF LPAREN booleanexpression RPAREN LBRACE $$2 slist . $$3 RBRACE ELSE LBRACE $$4 slist RBRACE $$5 slist  (7)
+	$$3 : .  (4)
+
+	.  reduce 4
+
+	$$3  goto 77
+
+
+state 77
+	slist : IF LPAREN booleanexpression RPAREN LBRACE $$2 slist $$3 . RBRACE ELSE LBRACE $$4 slist RBRACE $$5 slist  (7)
+
+	RBRACE  shift 78
+	.  error
+
+
+state 78
+	slist : IF LPAREN booleanexpression RPAREN LBRACE $$2 slist $$3 RBRACE . ELSE LBRACE $$4 slist RBRACE $$5 slist  (7)
+
+	ELSE  shift 79
+	.  error
+
+
+state 79
+	slist : IF LPAREN booleanexpression RPAREN LBRACE $$2 slist $$3 RBRACE ELSE . LBRACE $$4 slist RBRACE $$5 slist  (7)
+
+	LBRACE  shift 80
+	.  error
+
+
+state 80
+	slist : IF LPAREN booleanexpression RPAREN LBRACE $$2 slist $$3 RBRACE ELSE LBRACE . $$4 slist RBRACE $$5 slist  (7)
+	$$4 : .  (5)
+
+	.  reduce 5
+
+	$$4  goto 81
+
+
+state 81
+	slist : IF LPAREN booleanexpression RPAREN LBRACE $$2 slist $$3 RBRACE ELSE LBRACE $$4 . slist RBRACE $$5 slist  (7)
+	slist : .  (10)
+
+	error  shift 1
+	INC  shift 2
+	DEC  shift 3
+	LPAREN  shift 4
+	IF  shift 5
+	IDENTIFIER  shift 6
+	RBRACE  reduce 10
+
+	slist  goto 82
+	assignmentexpression  goto 8
+	variable  goto 9
+
+
+state 82
+	slist : IF LPAREN booleanexpression RPAREN LBRACE $$2 slist $$3 RBRACE ELSE LBRACE $$4 slist . RBRACE $$5 slist  (7)
+
+	RBRACE  shift 83
+	.  error
+
+
+state 83
+	slist : IF LPAREN booleanexpression RPAREN LBRACE $$2 slist $$3 RBRACE ELSE LBRACE $$4 slist RBRACE . $$5 slist  (7)
+	$$5 : .  (6)
+
+	.  reduce 6
+
+	$$5  goto 84
+
+
+state 84
+	slist : IF LPAREN booleanexpression RPAREN LBRACE $$2 slist $$3 RBRACE ELSE LBRACE $$4 slist RBRACE $$5 . slist  (7)
+	slist : .  (10)
+
+	error  shift 1
+	INC  shift 2
+	DEC  shift 3
+	LPAREN  shift 4
+	IF  shift 5
+	IDENTIFIER  shift 6
+	$end  reduce 10
+	RBRACE  reduce 10
+
+	slist  goto 85
+	assignmentexpression  goto 8
+	variable  goto 9
+
+
+state 85
+	slist : IF LPAREN booleanexpression RPAREN LBRACE $$2 slist $$3 RBRACE ELSE LBRACE $$4 slist RBRACE $$5 slist .  (7)
+
+	.  reduce 7
+
+
+29 terminals, 17 nonterminals
+46 grammar rules, 86 states
+
+grammar parser grammar
+symbol# value# symbol
+     0      0  $end
+     1    256  error
+     2    257  ADD
+     3    258  SUB
+     4    259  MUL
+     5    260  DIV
+     6    261  INC
+     7    262  DEC
+     8    263  ASSIGN
+     9    264  LPAREN
+    10    265  RPAREN
+    11    266  LBRACE
+    12    267  RBRACE
+    13    268  LBRACKET
+    14    269  RBRACKET
+    15    270  SEMICOLON
+    16    271  IF
+    17    272  ELSE
+    18    273  LT
+    19    274  GT
+    20    275  LEQ
+    21    276  GEQ
+    22    277  EQ
+    23    278  NEQ
+    24    279  AND
+    25    280  OR
+    26    281  NOT
+    27    282  INTEGER
+    28    283  IDENTIFIER
+    29    284  $accept
+    30    285  slist
+    31    286  assignmentexpression
+    32    287  variable
+    33    288  additiveexpression
+    34    289  multiplicativeexpression
+    35    290  unaryexpression
+    36    291  postfixexpression
+    37    292  primaryexpression
+    38    293  constant
+    39    294  booleanexpression
+    40    295  $$1
+    41    296  $$2
+    42    297  $$3
+    43    298  $$4
+    44    299  $$5
+    45    300  $$6

@@ -1,8 +1,13 @@
 a = b + 20;
-a - h &&j;
-if (y)
+switch (a)
 {
-    g = 9;
+case b:
+    a = 10;
+    break;
+case 5:
+    j = l--;
+default:
+    a = 0;
 }
 if (x < y && u == 7)
 {
@@ -16,5 +21,3 @@ while (v)
 {
     a--;
 }
-y = a;
-g = 10;
