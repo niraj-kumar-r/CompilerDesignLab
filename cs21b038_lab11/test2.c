@@ -1,6 +1,7 @@
 switch (f)
 {
 case 5:
+    int a, b;
     if (a < k)
     {
         a++;

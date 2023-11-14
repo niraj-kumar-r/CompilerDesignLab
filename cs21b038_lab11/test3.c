@@ -1,3 +1,4 @@
+int k;
 while (j < l)
 {
     if (u == 9)
@@ -5,6 +6,7 @@ while (j < l)
         switch (j)
         {
         case g:
+            int k;
             k--;
             break;
 

@@ -1,6 +1,7 @@
 %{
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 int yylex();
 int yyerror(char *);
 int eflag=0;
@@ -26,6 +27,7 @@ typedef struct symbol {
 			CHAR_TYPE 
 		} type;
 		// Dont mess with the ordering of the enum
+	bool is_array;
     char name[20];
     int size;
     int offset;
@@ -34,10 +36,11 @@ typedef struct symbol {
 
 symbol *symtab = NULL;
 
-symbol *put_symbol(char name[], int size, int type) {
+symbol *put_symbol(char name[], int size, int type, bool is_array) {
     symbol *sym = malloc(sizeof(symbol));
 	strcpy(sym->name, name);
 	sym->type = type;
+	sym->is_array = is_array;
     // sym->name = strdup(name);
     sym->size = size;
     sym->offset = symtab ? symtab->offset + symtab->size : 0;
@@ -55,16 +58,28 @@ symbol *get_symbol(char *name) {
     return NULL;
 }
 
+symbol *get_scoped_symbol(char *name) {
+	for (symbol *sym = symtab; sym && sym->size != 0; sym = sym->next) {
+		if (strcmp(sym->name, name) == 0) {
+			return sym;
+		}
+	}
+	return NULL;
+}
+
 void open_scope() {
-    put_symbol("", 0, 0);
+    put_symbol("", 0, 0, false);
 }
 
 void close_scope() {
     symbol *sym = symtab;
 	printf("\n\n------Closing scope:--------\n");
     printf("Name\tSize\tOffset\tType\n");
-    while (sym && sym->name[0] != '\0') {
-		printf("%s\t%d\t%#06x\t%s\n", sym->name, sym->size, sym->offset, sym->type == INT_TYPE ? "int" : sym->type == FLOAT_TYPE ? "float" : "char");
+    while (sym && sym->size != 0) {
+		if(sym->is_array)
+			printf("%s\t%d\t%#06x\t%s\n", sym->name, sym->size, sym->offset, sym->type == INT_TYPE ? "int-array" : sym->type == FLOAT_TYPE ? "float-array" : "char-array");
+		else
+			printf("%s\t%d\t%#06x\t%s\n", sym->name, sym->size, sym->offset, sym->type == INT_TYPE ? "int" : sym->type == FLOAT_TYPE ? "float" : "char");
         symbol *next = sym->next;
         // free(sym->name);
         free(sym);
@@ -128,28 +143,51 @@ typedef struct ASTNode {
 %token <intValue> INTEGER
 %token <lexeme> IDENTIFIER
 %type <node> slist typeSpecifier expression assignmentExpression conditionalExpression logicalOrExpression logicalAndExpression equalityExpression relationalExpression additiveExpression multiplicativeExpression unaryExpression postfixExpression primaryExpression selectionStatement elseSelection labeledStatement iterationStatement
-
+%type <intValue> arrayDeclarator
 
 %%
 
-program : slist {printf("\n\nCompleted\n");};
+program : {open_scope();} slist {close_scope(); printf("\n\nCompleted\n");};
 
 slist : assignmentExpression SEMICOLON slist
 		| variableDeclaration SEMICOLON slist
 		| selectionStatement slist
 		| iterationStatement slist
 		| error {printf("\nRejected");} slist
-		| {close_scope(); printf("\n");};
+		| {printf("\n");};
 
 variableDeclaration : typeSpecifier identifierList;
 
 identifierList : IDENTIFIER {
-					put_symbol($1, $<node>0->intValue, $<node>0->token);
-					printf("\nNew variable: %s", $1);
+					if(get_scoped_symbol($1) != NULL){
+						printf("\nError : Variable %s already declared, exiting program\n", $1);
+						exit(0);
+					}
+					put_symbol($1, $<node>0->intValue, $<node>0->token, false);
+					printf("\nNew variable %s", $1);
 				}
 				| identifierList COMMA IDENTIFIER {
-					put_symbol($3, $<node>0->intValue, $<node>0->token);
-					printf("\nNew variable: %s", $3);
+					if(get_scoped_symbol($3) != NULL){
+						printf("\nError : Variable %s already declared, exiting program\n", $3);
+						exit(0);
+					}
+					put_symbol($3, $<node>0->intValue, $<node>0->token, false);
+					printf("\nNew variable %s", $3);
+				}
+				| identifierList COMMA IDENTIFIER arrayDeclarator {
+					if(get_scoped_symbol($3) != NULL){
+						printf("\nError : Variable %s already declared, exiting program\n", $3);
+						exit(0);
+					}
+					put_symbol($3, $<node>0->intValue * $4, $<node>0->token, true);
+					printf("\nNew variable %s", $3);
+				};
+
+arrayDeclarator : arrayDeclarator LBRACKET INTEGER RBRACKET {
+					$$ = $1 * $3;
+				}
+				| LBRACKET INTEGER RBRACKET {
+					$$ = $2;
 				};
 
 typeSpecifier :	INT_TYPE {
@@ -535,6 +573,10 @@ primaryExpression : INTEGER {
 						printf("\n%s = %d", $$->temp_var, $$->intValue);
 					} 
 					| IDENTIFIER {
+						if(get_symbol($1) == NULL){
+							printf("\nError : Variable %s not declared, exiting program\n", $1);
+							exit(0);
+						}
 						$$ = malloc(sizeof(ASTNode));
 						if($$ == NULL){
 							printf("Out of memory\n");
@@ -551,6 +593,7 @@ primaryExpression : INTEGER {
 					};
 
 selectionStatement :	IF LPAREN assignmentExpression RPAREN LBRACE {
+							open_scope();
 							$$ = malloc(sizeof(struct ASTNode));
 							if($$ == NULL){
 								printf("Out of memory\n");
@@ -572,6 +615,7 @@ selectionStatement :	IF LPAREN assignmentExpression RPAREN LBRACE {
 							$$->info.flowControlInfo.trueBranch = $7;
 							printf("\ngoto %s", $$->info.flowControlInfo.next_label);
 							printf("\n\n%s:", $$->info.flowControlInfo.false_label);
+							close_scope();
 						} RBRACE elseSelection {
 							$$ = $8;
 							ASTNode *temp = $10;
@@ -604,6 +648,7 @@ selectionStatement :	IF LPAREN assignmentExpression RPAREN LBRACE {
 						};
 
 labeledStatement :	CASE conditionalExpression {
+						open_scope();
 						$$ = malloc(sizeof(struct ASTNode));
 						if($$ == NULL){
 							printf("Out of memory\n");
@@ -613,9 +658,10 @@ labeledStatement :	CASE conditionalExpression {
 						strcpy($$->info.flowControlInfo.false_label, label_g);
 						printf("\nifFalse %s = %s goto %s", switchStack[switchStackTop].temp_var, $2->temp_var, label_g);
 					} COLON slist breakStatement  {
+						close_scope();
 						printf("\n\n%s:", $3->info.flowControlInfo.false_label);
 					} labeledStatement {$$ = $3;}
-					| DEFAULT COLON slist breakStatement {
+					| DEFAULT COLON {open_scope();} slist {close_scope();} breakStatement {
 						$$ = NULL;
 					}
 					| {$$=NULL;printf("\ngoto %s", switchStack[switchStackTop].out_label); };
@@ -626,8 +672,9 @@ breakStatement : BREAK SEMICOLON {
 				| {};
 
 
-elseSelection : ELSE LBRACE slist RBRACE {
-					$$ = $3;
+elseSelection : ELSE LBRACE {open_scope();} slist RBRACE {
+					close_scope();
+					$$ = $4;
 				} | { $$ = NULL;};
 
 iterationStatement :	WHILE {
@@ -650,7 +697,9 @@ iterationStatement :	WHILE {
 							printf("\nif %s goto %s", $$->info.flowControlInfo.condition->temp_var, $$->info.flowControlInfo.true_label);
 							printf("\ngoto %s", $$->info.flowControlInfo.false_label);
 							printf("\n\n%s:", $$->info.flowControlInfo.true_label);
+							open_scope();
 						} RPAREN LBRACE slist RBRACE {
+							close_scope();
 							$$ = $5;
 							$$->info.flowControlInfo.trueBranch = $8;
 							printf("\ngoto %s", $$->info.flowControlInfo.condition_label);

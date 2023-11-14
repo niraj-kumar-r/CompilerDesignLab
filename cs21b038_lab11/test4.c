@@ -1,3 +1,4 @@
+int j, k, g;
 switch (j)
 {
 case g:
