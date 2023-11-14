@@ -1,0 +1,120 @@
+%
+{
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define YYSTYPE char *
+    int yylex(void);
+    void yyerror(char *);
+
+    typedef struct symbol
+    {
+        char *name;
+        int size;
+        int offset;
+        struct symbol *next;
+    } symbol;
+
+    symbol *symtab = NULL;
+
+    symbol *put_symbol(char *name, int size)
+    {
+        symbol *sym = malloc(sizeof(symbol));
+        sym->name = strdup(name);
+        sym->size = size;
+        sym->offset = symtab ? symtab->offset + symtab->size : 0;
+        sym->next = symtab;
+        symtab = sym;
+        return sym;
+    }
+
+    symbol *get_symbol(char *name)
+    {
+        for (symbol *sym = symtab; sym; sym = sym->next)
+        {
+            if (strcmp(sym->name, name) == 0)
+            {
+                return sym;
+            }
+        }
+        return NULL;
+    }
+
+    void open_scope()
+    {
+        put_symbol("", 0);
+    }
+
+    void close_scope()
+    {
+        symbol *sym = symtab;
+        while (sym && sym->name[0] != '\0')
+        {
+            symbol *next = sym->next;
+            free(sym->name);
+            free(sym);
+            sym = next;
+        }
+        symtab = sym ? sym->next : NULL;
+        if (sym)
+        {
+            free(sym);
+        }
+    }
+    %
+}
+
+% token INT FLOAT CHAR ARRAY ID NUM EOL
+
+        % %
+
+        program : program block EOL |
+    ;
+
+block : '{' declarations statements '}';
+
+declarations : declarations declaration EOL |
+    ;
+
+declaration : type ID { put_symbol($2, $1 == INT || $1 == FLOAT ? 4 : 1); }
+| ARRAY NUM type ID { put_symbol($4, $2 * ($3 == INT || $3 == FLOAT ? 4 : 1)); };
+
+type : INT | FLOAT | CHAR;
+
+statements : statements statement EOL |
+    ;
+
+statement : ID '=' expression
+{
+    symbol *sym = get_symbol($1);
+    if (!sym)
+    {
+        yyerror("undefined variable");
+    }
+};
+
+expression : NUM | ID
+{
+    symbol *sym = get_symbol($1);
+    if (!sym)
+    {
+        yyerror("undefined variable");
+    }
+};
+
+% %
+
+    void yyerror(char *s)
+{
+    fprintf(stderr, "error: %s\n", s);
+}
+
+int main(void)
+{
+    yyparse();
+    return 0;
+}
+
+declaration : type ID { put_symbol($2, $1 == INT || $1 == FLOAT ? 4 : 1); }
+| ARRAY NUM type ID { put_symbol($4, $2 * ($3 == INT || $3 == FLOAT ? 4 : 1)); }
+| ARRAY NUM NUM type ID { put_symbol($5, $2 * $3 * ($4 == INT || $4 == FLOAT ? 4 : 1)); };
