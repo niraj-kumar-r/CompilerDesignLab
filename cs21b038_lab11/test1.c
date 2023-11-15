@@ -1,6 +1,6 @@
 int a;
-char b;
-a = b + 20;
+char b, d;
+a = d + 20;
 if (a > 10)
 {
     int a;

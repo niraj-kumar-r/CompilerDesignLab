@@ -73,8 +73,12 @@ void open_scope() {
 
 void close_scope() {
     symbol *sym = symtab;
-	printf("\n\n------Closing scope:--------\n");
-    printf("Name\tSize\tOffset\tType\n");
+	bool isPrinted = false;
+	if(sym && sym->size != 0){
+		printf("\n\n------Closing scope:--------\n");
+		printf("Name\tSize\tOffset\tType\n");
+		isPrinted = true;
+	}
     while (sym && sym->size != 0) {
 		if(sym->is_array)
 			printf("%s\t%d\t%#06x\t%s\n", sym->name, sym->size, sym->offset, sym->type == INT_TYPE ? "int-array" : sym->type == FLOAT_TYPE ? "float-array" : "char-array");
@@ -85,7 +89,9 @@ void close_scope() {
         free(sym);
         sym = next;
     }
-	printf("-----------------------------\n");
+	if(isPrinted){
+		printf("-----------------------------\n");
+	}
     symtab = sym ? sym->next : NULL;
     if (sym) {
         free(sym);
@@ -699,10 +705,10 @@ iterationStatement :	WHILE {
 							printf("\n\n%s:", $$->info.flowControlInfo.true_label);
 							open_scope();
 						} RPAREN LBRACE slist RBRACE {
-							close_scope();
 							$$ = $5;
 							$$->info.flowControlInfo.trueBranch = $8;
 							printf("\ngoto %s", $$->info.flowControlInfo.condition_label);
+							close_scope();
 							printf("\n\n%s:", $$->info.flowControlInfo.false_label);
 						};
 
