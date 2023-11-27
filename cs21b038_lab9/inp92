@@ -1,0 +1,14 @@
+while (currentTemp != desiredTemp)
+{
+    if (currentTemp < desiredTemp)
+    {
+        currentTemp++;
+    }
+    else
+    {
+        if (currentTemp > desiredTemp)
+        {
+            currentTemp--;
+        }
+    }
+}

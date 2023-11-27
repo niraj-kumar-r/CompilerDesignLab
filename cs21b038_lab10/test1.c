@@ -1,4 +1,4 @@
-a = b + 20;
+a = b / c;
 switch (a)
 {
 case b:

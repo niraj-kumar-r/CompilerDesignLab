@@ -1,6 +1,6 @@
 int j, k[100][6][3], g;
 j = 600;
-g = (j - (j / 10) * 7)++;
+g = (j - (j / 10) * 7);
 switch (j)
 {
 case (g < j):
@@ -13,6 +13,11 @@ case (g < j):
         while (k--)
         {
             float m;
+            m = 10;
+            if (!m)
+            {
+                m++;
+            }
             j++;
         }
         break;

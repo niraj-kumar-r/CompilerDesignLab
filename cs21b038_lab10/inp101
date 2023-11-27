@@ -1,0 +1,14 @@
+switch (ch)
+{
+case 1:
+    a = b + c;
+    break;
+
+case 2:
+    a = b - c;
+    break;
+
+default:
+    a = b * c;
+}
+a = b / 100;
